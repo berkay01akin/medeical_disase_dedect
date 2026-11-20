@@ -1,0 +1,29 @@
+{
+  "total_images": 7200,
+  "splits": {
+    "train": {
+      "glioma": 1190,
+      "meningioma": 1190,
+      "notumor": 1190,
+      "pituitary": 1190
+    },
+    "val": {
+      "glioma": 210,
+      "meningioma": 210,
+      "notumor": 210,
+      "pituitary": 210
+    },
+    "test": {
+      "glioma": 400,
+      "meningioma": 400,
+      "notumor": 400,
+      "pituitary": 400
+    }
+  },
+  "preprocessing": {
+    "roi_cropping": "GaussianBlur + Otsu Threshold + Morphological Close/Open + Largest Contour",
+    "noise_filter": "Bilateral Filter (d=5, sigmaColor=50, sigmaSpace=50)",
+    "contrast_enhancement": "CLAHE (clipLimit=2.0, tileGridSize=8x8)",
+    "output_size": "224x224 RGB"
+  }
+}

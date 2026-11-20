@@ -1,0 +1,55 @@
+{
+  "project_title": "Medikal Görüntülerden Hastalık Tespiti",
+  "project_subtitle": "Beyin MR Görüntülerinde Klasik Görüntü İşleme, CNN, ViT, Swin Transformer ve SAM Tabanlı Tümör Tespiti ve Segmentasyonu",
+  "course_name": "Görüntü İşleme",
+  "github_url": "https://github.com/berkay01akin/medeical_disase_dedect",
+  "github_git_url": "https://github.com/berkay01akin/medeical_disase_dedect.git",
+  "team_members": [
+    {"name": "Berkay Akın", "student_id": "Öğrenci No", "role": "Veri Seti & Klasik Görüntü İşleme"},
+    {"name": "2. Grup Üyesi (Ad Soyad)", "student_id": "Öğrenci No", "role": "Derin Öğrenme Modelleri (CNN, ViT, Swin) & Değerlendirme"},
+    {"name": "3. Grup Üyesi (Ad Soyad)", "student_id": "Öğrenci No", "role": "Grad-CAM, SAM Segmentasyon & Streamlit Demo Arayüzü"}
+  ],
+  "dataset_name": "Brain Tumor MRI Dataset (Kaggle - Figshare + SARTAJ + Br35H)",
+  "classes": ["glioma", "meningioma", "notumor", "pituitary"],
+  "class_labels_tr": {
+    "glioma": "Glioma Tümörü",
+    "meningioma": "Menenjiyom Tümörü",
+    "notumor": "Tümör Yok (Sağlıklı)",
+    "pituitary": "Hipofiz (Pituitary) Tümörü"
+  },
+  "class_descriptions_tr": {
+    "glioma": "Beyin ve omurilikteki glial hücrelerden köken alan, genellikle infiltratif yapıda birincil beyin tümörüdür.",
+    "meningioma": "Beyni ve omuriliği saran meninks zarlarından gelişen, çoğunlukla iyi huylu ve keskin sınırlı tümördür.",
+    "notumor": "Analiz edilen MR kesitinde belirgin bir tümör bulgusuna rastlanmamıştır.",
+    "pituitary": "Beyin tabanındaki hipofiz bezinde oluşan, hormon dengesini ve görme sinirlerini etkileyebilen tümördür."
+  },
+  "models": {
+    "cnn": {
+      "timm_name": "resnet50",
+      "display_name": "CNN (ResNet-50)",
+      "short_name": "ResNet-50",
+      "family": "CNN",
+      "epochs": 8,
+      "batch_size": 32,
+      "lr": 0.0003
+    },
+    "vit": {
+      "timm_name": "vit_base_patch16_224",
+      "display_name": "Vision Transformer (ViT-B/16)",
+      "short_name": "ViT-B/16",
+      "family": "ViT",
+      "epochs": 8,
+      "batch_size": 32,
+      "lr": 0.0001
+    },
+    "swin": {
+      "timm_name": "swin_tiny_patch4_window7_224",
+      "display_name": "Swin Transformer (Swin-T)",
+      "short_name": "Swin-T",
+      "family": "Swin Transformer",
+      "epochs": 8,
+      "batch_size": 32,
+      "lr": 0.00015
+    }
+  }
+}

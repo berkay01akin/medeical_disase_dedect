@@ -1,0 +1,23 @@
+# Python & Virtual Environment
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Large Datasets & Model Checkpoints (GitHub 100MB file limit!)
+# Not: Küçük sample_images/ ve results/plots/ repoya dahil edilir.
+data/
+checkpoints/*.pth
+checkpoints/*.pt
+*.pt
+*.pth
+!sample_images/**
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log

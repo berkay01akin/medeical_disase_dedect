@@ -63,9 +63,9 @@ streamlit run app.py
 ## 👥 Grup Üyeleri
 | Ad Soyad | Öğrenci No | Sorumluluk Alanı |
 | :--- | :---: | :--- |
-| Berkay Akın | Öğrenci No | Veri Setleri, Klasik Görüntü İşleme & Modalite Router |
-| 2. Grup Üyesi (Ad Soyad) | Öğrenci No | Çoklu Modalite Derin Öğrenme Modelleri (CNN, ViT, Swin) & Değerlendirme |
-| 3. Grup Üyesi (Ad Soyad) | Öğrenci No | Grad-CAM, MobileSAM Segmentasyon & 3 Modaliteli Streamlit Arayüzü |
+| Berkay Akın | 1240606818 | Veri Setleri, Klasik Görüntü İşleme & Modalite Router |
+| Mustafa Doğan Özdin | 1240606054 | Çoklu Modalite Derin Öğrenme Modelleri (CNN, ViT, Swin) & Değerlendirme |
+| Mehmet Can Erkal | 1230606021 | Grad-CAM, MobileSAM Segmentasyon & 3 Modaliteli Streamlit Arayüzü |
 
 ---
 

@@ -5,9 +5,9 @@
   "github_url": "https://github.com/berkay01akin/medeical_disase_dedect",
   "github_git_url": "https://github.com/berkay01akin/medeical_disase_dedect.git",
   "team_members": [
-    {"name": "Berkay Akın", "student_id": "Öğrenci No", "role": "Veri Setleri, Klasik Görüntü İşleme & Modalite Router"},
-    {"name": "2. Grup Üyesi (Ad Soyad)", "student_id": "Öğrenci No", "role": "Çoklu Modalite Derin Öğrenme Modelleri (CNN, ViT, Swin) & Değerlendirme"},
-    {"name": "3. Grup Üyesi (Ad Soyad)", "student_id": "Öğrenci No", "role": "Grad-CAM, MobileSAM Segmentasyon & 3 Modaliteli Streamlit Arayüzü"}
+    {"name": "Berkay Akın", "student_id": "1240606818", "role": "Veri Setleri, Klasik Görüntü İşleme & Modalite Router"},
+    {"name": "Mustafa Doğan Özdin", "student_id": "1240606054", "role": "Çoklu Modalite Derin Öğrenme Modelleri (CNN, ViT, Swin) & Değerlendirme"},
+    {"name": "Mehmet Can Erkal", "student_id": "1230606021", "role": "Grad-CAM, MobileSAM Segmentasyon & 3 Modaliteli Streamlit Arayüzü"}
   ],
   "dataset_name": "Brain Tumor MRI (7.200 MR) + Chest X-Ray COVID/Pnömoni/TB (6.461 Röntgen) + Lung Cancer CT (1.000 BT)",
   "classes": ["glioma", "meningioma", "notumor", "pituitary"],

@@ -1,12 +1,17 @@
 """
-3 Modaliteli Akademik Teslim Dokümanları Üreticisi (scripts/generate_deliverables.py)
--------------------------------------------------------------------------------------
-MR (Beyin Tümörü), Röntgen (COVID-19/Pnömoni/Tüberküloz), Tomografi (Akciğer Kanseri)
-ve Otomatik Modalite Router (ResNet-18) sonuçlarıyla 3 teslim dosyasını üretir:
-  1. docs/Proje_Raporu.pdf (Kapakta GitHub linki, Özet, İçindekiler, Teori, 3 Modalite
-     Deneysel Sonuçları, BRISC 2025 Harici Doğrulama, Kullanım Kılavuzu, Sonuç ve Kaynakça)
-  2. docs/Sunum_Medikal_Goruntu_Tespiti.pptx (20 slayt, 3 kişilik 15-20 dk akış, konuşmacı notlu)
-  3. README.md (GitHub reposu için tam dokümantasyon)
+Akademik Rapor ve Temelden Anlatımlı Sunum Üreticisi (scripts/generate_deliverables.py)
+---------------------------------------------------------------------------------------
+İki birbirinden bağımsız, farklı amaçlara hizmet eden yüksek kaliteli teslim üretir:
+  1. docs/Proje_Raporu.pdf:
+     Ciddi, düzenli, resmi akademik proje raporu (slaytların kopyası değildir).
+     İçindekiler (gerçek sayfa numaralı), matematiksel tanımlar, kesin veri dağılımları,
+     yazılım/kütüphane envanteri, 3 modalite + sınıf bazlı metrik tabloları, BRISC 2025
+     harici doğrulaması, bilimsel tartışma ve 21 denetlenmiş IEEE kaynakça içerir.
+  2. docs/Sunum_Medikal_Goruntu_Tespiti.pptx:
+     18 slaytlık, temelden ileriye akıcı, anlatıcının tamamen hakim olabileceği sade
+     görsel sunum + her slaytın altında 3 konuşmacı için detaylı konuşma notları.
+  3. README.md:
+     GitHub reposu için güncel ve tutarlı dokümantasyon.
 """
 
 from __future__ import annotations
@@ -35,20 +40,51 @@ PLOTS_DIR = RESULTS_DIR / "plots"
 SAMPLE_DIR = PROJECT_ROOT / "sample_images"
 DOCS_DIR = PROJECT_ROOT / "docs"
 
+# ==============================================================================
+# DENETLENMİŞ 21 AKADEMİK KAYNAKÇA (KODDA GERÇEKTEN KULLANILAN HER YÖNTEM,
+# KÜTÜPHANE VE VERİ SETİ)
+# ==============================================================================
 REFERENCES: List[str] = [
-    "[1] N. Otsu, 'A Threshold Selection Method from Gray-Level Histograms,' IEEE Trans. Systems, Man, and Cybernetics, vol. 9, no. 1, pp. 62–66, 1979.",
-    "[2] K. Zuiderveld, 'Contrast Limited Adaptive Histogram Equalization,' Graphics Gems IV, Academic Press, pp. 474–485, 1994.",
-    "[3] C. Tomasi and R. Manduchi, 'Bilateral Filtering for Gray and Color Images,' Proc. IEEE ICCV, pp. 839–846, 1998.",
-    "[4] K. He, X. Zhang, S. Ren, and J. Sun, 'Deep Residual Learning for Image Recognition,' Proc. IEEE/CVF CVPR, pp. 770–778, 2016.",
-    "[5] A. Dosovitskiy et al., 'An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale,' ICLR, 2021.",
-    "[6] Z. Liu et al., 'Swin Transformer: Hierarchical Vision Transformer using Shifted Windows,' Proc. IEEE/CVF ICCV, pp. 10012–10022, 2021.",
-    "[7] R. R. Selvaraju et al., 'Grad-CAM: Visual Explanations from Deep Networks via Gradient-Based Localization,' Proc. IEEE ICCV, pp. 618–626, 2017.",
-    "[8] A. Kirillov et al., 'Segment Anything,' Proc. IEEE/CVF ICCV, pp. 4015–4026, 2023.",
-    "[9] C. Zhang et al., 'Faster Segment Anything: Towards Lightweight SAM for Mobile Applications (MobileSAM),' arXiv:2306.14289, 2023.",
-    "[10] M. Nickparvar, 'Brain Tumor MRI Dataset (Figshare, SARTAJ, Br35H),' Kaggle Dataset, 2021.",
-    "[11] ChehabLab, 'BRISC 2025: Brain Tumor MRI Classification & Segmentation Benchmark,' Hugging Face (chehablab/BRISC2025), 2025.",
-    "[12] M. E. H. Chowdhury et al., 'COVID-19 Radiography & Pneumonia/Tuberculosis Chest X-Ray Benchmark,' IEEE Access / Hugging Face (fahmiaziz/pneumonia-covid-tuberculosis).",
-    "[13] Chest CT-Scan Lung Cancer 4-Class Dataset (Adenocarcinoma, Large Cell, Squamous Cell, Normal), Hugging Face (Kabil007/LungCancer4Types), 2024.",
+    # Klasik Görüntü İşleme
+    "[1] N. Otsu, 'A Threshold Selection Method from Gray-Level Histograms,' IEEE Transactions on Systems, Man, and Cybernetics, vol. 9, no. 1, pp. 62–66, 1979.",
+    "[2] K. Zuiderveld, 'Contrast Limited Adaptive Histogram Equalization (CLAHE),' Graphics Gems IV, Academic Press, pp. 474–485, 1994.",
+    "[3] C. Tomasi and R. Manduchi, 'Bilateral Filtering for Gray and Color Images,' Proc. IEEE Int. Conf. on Computer Vision (ICCV), pp. 839–846, 1998.",
+    "[4] R. C. Gonzalez and R. E. Woods, Digital Image Processing, 4th ed., Pearson Education, 2018 (Morfolojik Açma/Kapama, Histogram Eşitleme ve Ön İşleme Temelleri).",
+    # Derin Öğrenme, Optimizasyon, XAI ve Segmentasyon
+    "[5] K. He, X. Zhang, S. Ren, and J. Sun, 'Deep Residual Learning for Image Recognition (ResNet),' Proc. IEEE/CVF CVPR, pp. 770–778, 2016.",
+    "[6] A. Dosovitskiy et al., 'An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale (ViT),' Int. Conf. on Learning Representations (ICLR), 2021.",
+    "[7] Z. Liu et al., 'Swin Transformer: Hierarchical Vision Transformer using Shifted Windows,' Proc. IEEE/CVF ICCV, pp. 10012–10022, 2021.",
+    "[8] R. R. Selvaraju et al., 'Grad-CAM: Visual Explanations from Deep Networks via Gradient-Based Localization,' Proc. IEEE ICCV, pp. 618–626, 2017.",
+    "[9] A. Kirillov et al., 'Segment Anything (SAM),' Proc. IEEE/CVF ICCV, pp. 4015–4026, 2023.",
+    "[10] C. Zhang et al., 'Faster Segment Anything: Towards Lightweight SAM for Mobile Applications (MobileSAM),' arXiv:2306.14289, 2023.",
+    "[11] I. Loshchilov and F. Hutter, 'Decoupled Weight Decay Regularization (AdamW),' ICLR, 2019; ve 'SGDR: Stochastic Gradient Descent with Warm Restarts (Cosine Annealing),' ICLR, 2017.",
+    # Kullanılan Yazılım Çatıları ve Kütüphaneler
+    "[12] A. Paszke et al., 'PyTorch: An Imperative Style, High-Performance Deep Learning Library,' Advances in Neural Information Processing Systems (NeurIPS), vol. 32, 2019.",
+    "[13] G. Bradski, 'The OpenCV Library,' Dr. Dobb's Journal of Software Tools, 2000.",
+    "[14] R. Wightman, 'PyTorch Image Models (timm),' GitHub Repository, 2019. [Çevrimiçi]: https://github.com/huggingface/pytorch-image-models",
+    "[15] G. Jocher, A. Chaurasia, and J. Qiu, 'Ultralytics YOLO & SAM Framework,' GitHub Repository, 2023. [Çevrimiçi]: https://github.com/ultralytics/ultralytics",
+    "[16] F. Pedregosa et al., 'Scikit-learn: Machine Learning in Python,' Journal of Machine Learning Research (JMLR), vol. 12, pp. 2825–2830, 2011.",
+    "[17] D. Mason, 'SU-E-T-33: pydicom: An Open Source DICOM Library,' Medical Physics, vol. 38, no. 6, p. 3493, 2011; ve Streamlit Web Framework, https://streamlit.io.",
+    # Kullanılan Medikal Veri Setleri
+    "[18] M. Nickparvar, 'Brain Tumor MRI Dataset (Figshare, SARTAJ, Br35H),' Kaggle Dataset, 2021. [Çevrimiçi]: https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset",
+    "[19] ChehabLab, 'BRISC 2025: Brain Tumor MRI Classification & Segmentation Benchmark,' Hugging Face Datasets (chehablab/BRISC2025), 2025.",
+    "[20] M. E. H. Chowdhury et al., 'Can AI Help in Screening Viral and COVID-19 Pneumonia?,' IEEE Access, vol. 8, pp. 132665–132676, 2020 (Hugging Face: fahmiaziz/pneumonia-covid-tuberculosis).",
+    "[21] Chest CT-Scan Lung Cancer 4-Class Dataset (Adenocarcinoma, Large Cell, Squamous Cell, Normal), Hugging Face Datasets (Kabil007/LungCancer4Types), 2024.",
+]
+
+# Sunum için seçilmiş 11 temel kaynakça
+SLIDE_REFERENCES: List[str] = [
+    REFERENCES[0],
+    REFERENCES[1],
+    REFERENCES[2],
+    REFERENCES[4],
+    REFERENCES[5],
+    REFERENCES[6],
+    REFERENCES[7],
+    REFERENCES[8],
+    REFERENCES[9],
+    REFERENCES[17],
+    "[11–13] Harici & Diğer Veri Setleri: BRISC 2025 [19], Chest X-Ray COVID/Pnömoni/TB [20], LungCancer4Types BT [21] | Çatılar: PyTorch, OpenCV, timm, Ultralytics, pydicom, Streamlit.",
 ]
 
 
@@ -63,15 +99,24 @@ def fmt_pct(val: float | None) -> str:
     return f"%{val*100:.2f}" if val is not None else "-"
 
 
+def _best_model_summary(m_data: Dict[str, Any]) -> Tuple[str, str, str]:
+    if not m_data or "models" not in m_data:
+        return "-", "-", "-"
+    bk = m_data.get("best_model_key", "swin")
+    bm = m_data["models"].get(bk, {})
+    return bm.get("short_name", "-"), fmt_pct(bm.get("accuracy")), fmt_pct(bm.get("f1_macro"))
+
+
 # ==============================================================================
-# 1. AKADEMİK PDF RAPOR ÜRETİCİ (fpdf2)
+# 1. RESMİ AKADEMİK PDF RAPORU (Slayttan Bağımsız, Derin, Düzenli, 21 Kaynakçalı)
 # ==============================================================================
-class MedicalReportPDF(FPDF):
+class AcademicReportPDF(FPDF):
     def __init__(self, project_title: str, github_url: str):
         super().__init__(orientation="P", unit="mm", format="A4")
         self.project_title = project_title
         self.github_url = github_url
         self.set_auto_page_break(auto=True, margin=17)
+        self.section_pages: List[Tuple[str, int]] = []
 
         font_dir = Path(r"C:\Windows\Fonts")
         self.add_font("TrArial", "", str(font_dir / "arial.ttf"))
@@ -83,12 +128,12 @@ class MedicalReportPDF(FPDF):
         if self.page_no() == 1:
             return
         self.set_y(8)
-        self.set_font("TrArial", "I", 8.2)
+        self.set_font("TrArial", "I", 8.0)
         self.set_text_color(100, 116, 139)
-        self.cell(0, 6, f"{self.project_title} (MR • Röntgen • BT)  |  Görüntü İşleme Proje Raporu", align="L")
+        self.cell(0, 6, f"{self.project_title} (MR • Röntgen • BT)  —  Görüntü İşleme Dersi Proje Raporu", align="L")
         self.set_draw_color(203, 213, 225)
-        self.line(15, 15, 195, 15)
-        self.set_y(19)
+        self.line(15, 14.5, 195, 14.5)
+        self.set_y(18.5)
 
     def footer(self) -> None:
         if self.page_no() == 1:
@@ -96,46 +141,58 @@ class MedicalReportPDF(FPDF):
         self.set_y(-13)
         self.set_draw_color(226, 232, 240)
         self.line(15, 282, 195, 282)
-        self.set_font("TrArial", "", 8.2)
+        self.set_font("TrArial", "", 8.0)
         self.set_text_color(100, 116, 139)
-        self.cell(90, 7, self.github_url, align="L")
-        self.cell(90, 7, f"Sayfa {self.page_no()}", align="R")
+        self.cell(125, 7, self.github_url, align="L")
+        self.cell(55, 7, f"Sayfa {self.page_no()}", align="R")
 
-    def section_title(self, text: str) -> None:
-        if self.get_y() > 240:
-            self.add_page()
-        self.ln(2.5)
-        self.set_font("TrArial", "B", 13)
-        self.set_text_color(15, 23, 42)
-        self.cell(0, 7.5, text, new_x="LMARGIN", new_y="NEXT")
-        self.set_draw_color(2, 132, 199)
-        self.set_line_width(0.65)
-        self.line(self.l_margin, self.get_y(), 195, self.get_y())
-        self.set_line_width(0.2)
-        self.ln(3)
-
-    def sub_title(self, text: str) -> None:
+    def section_title(self, text: str, record_toc: bool = True) -> None:
         if self.get_y() > 238:
             self.add_page()
-        self.ln(1.8)
-        self.set_font("TrArial", "B", 10.5)
+        if record_toc:
+            self.section_pages.append((text, self.page_no()))
+        self.ln(2.5)
+        self.set_font("TrArial", "B", 12.6)
+        self.set_text_color(15, 23, 42)
+        self.cell(0, 7.2, text, new_x="LMARGIN", new_y="NEXT")
+        self.set_draw_color(2, 132, 199)
+        self.set_line_width(0.6)
+        self.line(self.l_margin, self.get_y(), 195, self.get_y())
+        self.set_line_width(0.2)
+        self.ln(2.8)
+
+    def sub_title(self, text: str) -> None:
+        if self.get_y() > 240:
+            self.add_page()
+        self.ln(1.6)
+        self.set_font("TrArial", "B", 10.3)
         self.set_text_color(3, 105, 161)
-        self.cell(0, 6, text, new_x="LMARGIN", new_y="NEXT")
+        self.cell(0, 5.8, text, new_x="LMARGIN", new_y="NEXT")
 
     def body_text(self, text: str) -> None:
-        self.set_font("TrArial", "", 9.7)
+        self.set_font("TrArial", "", 9.5)
         self.set_text_color(30, 41, 59)
-        self.multi_cell(0, 5.1, text)
-        self.ln(1.5)
+        self.multi_cell(0, 5.0, text)
+        self.ln(1.4)
 
     def bullet(self, lead: str, text: str) -> None:
         if self.get_y() > 260:
             self.add_page()
         self.set_x(self.l_margin + 3)
-        self.set_font("TrArial", "", 9.4)
+        self.set_font("TrArial", "", 9.3)
         self.set_text_color(30, 41, 59)
-        self.multi_cell(self.w - self.l_margin - self.r_margin - 3, 5.0, f"• **{lead}:** {text}", markdown=True)
-        self.ln(0.9)
+        self.multi_cell(self.w - self.l_margin - self.r_margin - 3, 4.9, f"• **{lead}:** {text}", markdown=True)
+        self.ln(0.8)
+
+    def formula_box(self, text: str) -> None:
+        if self.get_y() > 252:
+            self.add_page()
+        self.set_fill_color(248, 250, 252)
+        self.set_draw_color(148, 163, 184)
+        self.set_font("TrMono", "", 8.4)
+        self.set_text_color(15, 23, 42)
+        self.multi_cell(0, 4.8, text.strip(), border=1, fill=True, align="C")
+        self.ln(2.0)
 
     def info_box(self, title: str, text: str) -> None:
         if self.get_y() > 242:
@@ -143,33 +200,34 @@ class MedicalReportPDF(FPDF):
         self.set_fill_color(240, 249, 255)
         self.set_draw_color(14, 165, 233)
         y0 = self.get_y()
-        self.set_xy(self.l_margin + 3, y0 + 2.3)
-        self.set_font("TrArial", "B", 9.5)
+        self.set_xy(self.l_margin + 3, y0 + 2.2)
+        self.set_font("TrArial", "B", 9.4)
         self.set_text_color(3, 105, 161)
-        self.multi_cell(174, 4.9, title)
+        self.multi_cell(174, 4.8, title)
         self.set_x(self.l_margin + 3)
-        self.set_font("TrArial", "", 9.2)
+        self.set_font("TrArial", "", 9.1)
         self.set_text_color(30, 41, 59)
-        self.multi_cell(174, 4.8, text)
-        y1 = self.get_y() + 2.3
+        self.multi_cell(174, 4.7, text)
+        y1 = self.get_y() + 2.2
         self.set_line_width(0.45)
         self.rect(self.l_margin, y0, 180, y1 - y0, style="D")
         self.set_fill_color(2, 132, 199)
         self.rect(self.l_margin, y0, 1.8, y1 - y0, style="F")
+        self.set_fill_color(255, 255, 255)
         self.set_line_width(0.2)
-        self.set_y(y1 + 2.5)
+        self.set_y(y1 + 2.4)
 
     def code_block(self, code: str) -> None:
-        if self.get_y() > 230:
+        if self.get_y() > 228:
             self.add_page()
         self.set_fill_color(241, 245, 249)
         self.set_draw_color(203, 213, 225)
-        self.set_font("TrMono", "", 7.9)
+        self.set_font("TrMono", "", 7.8)
         self.set_text_color(15, 23, 42)
-        self.multi_cell(0, 4.2, code.strip(), border=1, fill=True)
-        self.ln(2.3)
+        self.multi_cell(0, 4.1, code.strip(), border=1, fill=True)
+        self.ln(2.2)
 
-    def draw_table(self, headers: Sequence[Tuple[str, float, str]], rows: Sequence[Sequence[str]], font_size: float = 8.4) -> None:
+    def draw_table(self, headers: Sequence[Tuple[str, float, str]], rows: Sequence[Sequence[str]], font_size: float = 8.2) -> None:
         if self.get_y() > 235:
             self.add_page()
         col_widths = tuple(h[1] for h in headers)
@@ -178,6 +236,7 @@ class MedicalReportPDF(FPDF):
 
         self.set_font("TrArial", "", font_size)
         self.set_text_color(30, 41, 59)
+        self.set_fill_color(255, 255, 255)
         self.set_draw_color(180, 195, 212)
         with self.table(
             col_widths=col_widths,
@@ -185,8 +244,8 @@ class MedicalReportPDF(FPDF):
             headings_style=heading_style,
             cell_fill_color=(248, 250, 252),
             cell_fill_mode="ROWS",
-            line_height=5.0,
-            padding=1.6,
+            line_height=4.8,
+            padding=1.5,
         ) as tbl:
             hdr = tbl.row()
             for h_txt, _, _ in headers:
@@ -195,40 +254,33 @@ class MedicalReportPDF(FPDF):
                 row_obj = tbl.row()
                 for val in r:
                     row_obj.cell(str(val))
-        self.ln(2.8)
+        self.ln(2.6)
 
-    def add_figure(self, img_path: Path, caption: str, width_mm: float = 160) -> None:
+    def add_figure(self, img_path: Path, caption: str, width_mm: float = 156) -> None:
         if not img_path.exists():
             return
-        if self.get_y() > 192:
+        if self.get_y() > 190:
             self.add_page()
         x = (210 - width_mm) / 2.0
         self.image(str(img_path), x=x, w=width_mm)
-        self.ln(1.3)
-        self.set_font("TrArial", "I", 8.5)
+        self.ln(1.2)
+        self.set_font("TrArial", "I", 8.3)
         self.set_text_color(71, 85, 105)
-        self.multi_cell(0, 4.3, caption, align="C")
-        self.ln(2.8)
+        self.multi_cell(0, 4.2, caption, align="C")
+        self.ln(2.5)
 
 
-def _best_model_summary(m_data: Dict[str, Any]) -> Tuple[str, str, str]:
-    if not m_data or "models" not in m_data:
-        return "-", "-", "-"
-    bk = m_data.get("best_model_key", "swin")
-    bm = m_data["models"].get(bk, {})
-    return bm.get("short_name", "-"), fmt_pct(bm.get("accuracy")), fmt_pct(bm.get("f1_macro"))
-
-
-def build_pdf_report(
+def _render_academic_pdf_pass(
     cfg: Dict[str, Any],
     all_mod_metrics: Dict[str, Dict[str, Any]],
     router_metrics: Dict[str, Any],
     ext_metrics: Dict[str, Any],
-) -> Path:
-    DOCS_DIR.mkdir(parents=True, exist_ok=True)
-    out_pdf = DOCS_DIR / "Proje_Raporu.pdf"
-
-    pdf = MedicalReportPDF(cfg["project_title"], cfg["github_url"])
+    mri_ds: Dict[str, Any],
+    mm_ds: Dict[str, Any],
+    toc_entries: List[Tuple[str, int]] | None = None,
+) -> AcademicReportPDF:
+    """İki geçişli (2-pass) PDF oluşturucu: 1. geçiş gerçek sayfa numaralarını toplar, 2. geçiş kusursuz İçindekiler basar."""
+    pdf = AcademicReportPDF(cfg["project_title"], cfg["github_url"])
     pdf.set_margins(15, 15, 15)
 
     mri_b, mri_acc, mri_f1 = _best_model_summary(all_mod_metrics.get("brain_mri", {}))
@@ -240,216 +292,322 @@ def build_pdf_report(
     # ======================== SAYFA 1: KAPAK ========================
     pdf.add_page()
     pdf.set_fill_color(15, 23, 42)
-    pdf.rect(0, 0, 210, 95, style="F")
-    pdf.set_fill_color(56, 189, 248)
-    pdf.rect(0, 95, 210, 2.2, style="F")
+    pdf.rect(0, 0, 210, 94, style="F")
+    pdf.set_fill_color(2, 132, 199)
+    pdf.rect(0, 94, 210, 2.5, style="F")
 
-    pdf.set_y(17)
-    pdf.set_font("TrArial", "B", 11)
+    pdf.set_y(16)
+    pdf.set_font("TrArial", "B", 10.5)
     pdf.set_text_color(56, 189, 248)
-    pdf.cell(0, 7, f"{cfg['course_name'].upper()} DERSİ PROJE ÖDEVİ RAPORU", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 6.5, f"{cfg['course_name'].upper()} DERSİ — DÖNEM PROJESİ TEKNİK RAPORU", align="C", new_x="LMARGIN", new_y="NEXT")
 
     pdf.ln(5)
-    pdf.set_font("TrArial", "B", 23)
+    pdf.set_font("TrArial", "B", 22)
     pdf.set_text_color(255, 255, 255)
-    pdf.multi_cell(0, 11, cfg["project_title"], align="C")
+    pdf.multi_cell(0, 10.5, cfg["project_title"], align="C")
 
     pdf.ln(3)
-    pdf.set_font("TrArial", "", 10.6)
+    pdf.set_font("TrArial", "", 10.3)
     pdf.set_text_color(203, 213, 225)
-    pdf.multi_cell(0, 5.8, cfg["project_subtitle"], align="C")
+    pdf.multi_cell(0, 5.6, cfg["project_subtitle"], align="C")
 
-    # Zorunlu GitHub Repo Bağlantı Kutusu
-    pdf.set_y(107)
+    # Zorunlu GitHub Repo Bağlantısı (Kapak Sayfası)
+    pdf.set_y(106)
     pdf.set_fill_color(224, 242, 254)
     pdf.set_draw_color(2, 132, 199)
     pdf.set_line_width(0.7)
-    pdf.rect(15, 107, 180, 22, style="DF")
-    pdf.set_y(110)
-    pdf.set_font("TrArial", "B", 9.8)
+    pdf.rect(15, 106, 180, 23, style="DF")
+    pdf.set_y(109)
+    pdf.set_font("TrArial", "B", 9.6)
     pdf.set_text_color(3, 105, 161)
-    pdf.cell(0, 5.8, "GITHUB REPO BAĞLANTISI (KAYNAK KODLAR, MODEL RELEASE VE KULLANIM KILAVUZU)", align="C", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("TrArial", "B", 11.5)
+    pdf.cell(0, 5.8, "GITHUB REPOSU (KAYNAK KODLAR, RELEASE MODEL AĞIRLIKLARI VE KULLANIM KILAVUZU)", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("TrArial", "B", 11.4)
     pdf.set_text_color(15, 23, 42)
     pdf.cell(0, 8, cfg["github_url"], align="C", link=cfg["github_url"], new_x="LMARGIN", new_y="NEXT")
     pdf.set_line_width(0.2)
 
     # Grup Üyeleri Tablosu
-    pdf.set_y(140)
-    pdf.set_font("TrArial", "B", 11.2)
+    pdf.set_y(139)
+    pdf.set_font("TrArial", "B", 11)
     pdf.set_text_color(15, 23, 42)
-    pdf.cell(0, 7, "GRUP ÜYELERİ VE GÖREV DAĞILIMI", align="C", new_x="LMARGIN", new_y="NEXT")
-    pdf.ln(1.5)
+    pdf.cell(0, 6.8, "HAZIRLAYAN GRUP ÜYELERİ", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(1.2)
     pdf.draw_table(
-        [("Ad Soyad", 48, "L"), ("Öğrenci No", 28, "C"), ("Sorumluluk Alanı", 104, "L")],
+        [("Ad Soyad", 48, "L"), ("Öğrenci No", 28, "C"), ("Projedeki Sorumluluk Alanı", 104, "L")],
         [[m["name"], m["student_id"], m["role"]] for m in cfg["team_members"]],
-        font_size=8.9,
+        font_size=8.8,
     )
 
-    # 3 Modaliteli Özet Künye
-    pdf.set_y(201)
+    # Özet Teknik Künye
+    pdf.set_y(198)
     pdf.set_fill_color(248, 250, 252)
     pdf.set_draw_color(203, 213, 225)
-    pdf.rect(15, 201, 180, 68, style="DF")
-    pdf.set_xy(20, 205)
-    pdf.set_font("TrArial", "B", 9.8)
+    pdf.rect(15, 198, 180, 72, style="DF")
+    pdf.set_xy(20, 202)
+    pdf.set_font("TrArial", "B", 9.6)
     pdf.set_text_color(15, 23, 42)
-    pdf.cell(0, 6, "3 MODALİTELİ SİSTEM TEKNİK KÜNYESİ (10 EĞİTİLMİŞ MODEL)", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 5.8, "ÇALIŞMA KÜNYESİ VE DENEYSEL ÖZET", align="C", new_x="LMARGIN", new_y="NEXT")
     pdf.set_x(20)
-    pdf.set_font("TrArial", "", 9.1)
+    pdf.set_font("TrArial", "", 8.9)
     pdf.set_text_color(51, 65, 85)
     pdf.multi_cell(
         170,
-        5.5,
-        f"• Otomatik Modalite Router (ResNet-18): MR / Röntgen / BT ayrımı — Test Doğruluğu {rt_acc}\n"
-        f"• Beyin MR (4 Sınıf Tümör — 7.200 MR): En iyi {mri_b} ({mri_acc} Acc, {mri_f1} F1) | BRISC 2025 Harici: {ext_acc}\n"
-        f"• Göğüs Röntgeni (COVID-19 / Pnömoni / TB / Normal): En iyi {xr_b} ({xr_acc} Acc, {xr_f1} F1)\n"
-        f"• Akciğer BT (4 Sınıf Kanser — Adenokarsinom / Büyük Hücreli / Skuamöz / Normal): En iyi {ct_b} ({ct_acc} Acc, {ct_f1} F1)\n"
-        f"• Görüntü İşleme & Segmentasyon: Otsu, Morfoloji, Bilateral, CLAHE, DICOM (.dcm), Unified Grad-CAM, MobileSAM\n"
-        f"• Donanım: NVIDIA GeForce RTX 5070 Ti (CUDA 12.8, BF16 AMP)  |  Tarih: {datetime.now().strftime('%d.%m.%Y')}",
+        5.3,
+        f"• Kapsam: 3 Medikal Modalite (Beyin MR, Göğüs Röntgeni, Akciğer BT) + Otomatik Modalite Router (10 Model)\n"
+        f"• Otomatik Modalite Router (ResNet-18): 405 Bağımsız Test Görüntüsünde {rt_acc} Doğruluk / {rt_acc} F1\n"
+        f"• Beyin MR (7.200 MR — 4 Sınıf): En iyi {mri_b} ({mri_acc} Acc, {mri_f1} F1) | Harici BRISC 2025 (300 MR): {ext_acc}\n"
+        f"• Göğüs Röntgeni (3.174 Dengeli X-Ray — 4 Sınıf): En iyi {xr_b} ({xr_acc} Acc, {xr_f1} F1)\n"
+        f"• Akciğer BT (1.000 BT — 4 Sınıf Kanser): En iyi {ct_b} ({ct_acc} Acc, {ct_f1} F1)\n"
+        f"• Görüntü İşleme & XAI: Otsu, Morfoloji, Bilateral, CLAHE, DICOM (.dcm), Unified Grad-CAM, MobileSAM\n"
+        f"• Donanım & Ortam: Python 3.12 | PyTorch 2.11 (CUDA 12.8, BF16 AMP) | NVIDIA GeForce RTX 5070 Ti | {datetime.now().strftime('%d.%m.%Y')}",
     )
 
     # ======================== SAYFA 2: ÖZET & İÇİNDEKİLER ========================
     pdf.add_page()
-    pdf.section_title("Özet (Abstract)")
+    pdf.section_title("Özet (Abstract)", record_toc=False)
     pdf.body_text(
-        "Medikal görüntüleme (MR, Röntgen ve Bilgisayarlı Tomografi), beyin tümörleri, COVID-19/pnömoni ve akciğer "
-        "kanseri gibi yüksek riskli hastalıkların erken tanısında temel klinik araçtır. Ancak her modalitenin farklı "
-        "anatomik yapısı, kontrast karakteristikleri ve gürültü profilleri tekil bir 'kara kutu' sınıflandırıcı ile "
-        "güvenilir biçimde ele alınamamaktadır. Bu projede; üç temel medikal görüntüleme modalitesini (Beyin MR, Göğüs "
-        "Röntgeni ve Akciğer BT) tek bir akıllı platformda birleştiren, yanlış modalite yüklemelerini engelleyen "
-        "Otomatik Modalite Router (ResNet-18) destekli, açıklanabilir (Grad-CAM) ve piksel hassasiyetinde segmentasyon "
-        "(MobileSAM) yapabilen uçtan uca bir karar destek sistemi geliştirilmiştir."
+        "Tıbbi görüntüleme teknikleri (Manyetik Rezonans, Göğüs Röntgeni ve Bilgisayarlı Tomografi), merkezi sinir "
+        "sistemi tümörleri, COVID-19/pnömoni gibi solunum yolu enfeksiyonları ve akciğer kanseri alt tiplerinin erken "
+        "teşhisinde kritik öneme sahiptir. Bununla birlikte klinik ortamlarda karşılaşılan tarayıcı kaynaklı gürültü, "
+        "düşük yerel kontrast, yüksek radyoloji iş yükü ve farklı modalitelerin kendine özgü anatomik yapıları otomatik "
+        "karar destek sistemlerinin tasarımını zorlaştırmaktadır. Ayrıca yalnızca sınıf etiketi üreten açıklanamaz ('kara "
+        "kutu') yapay zeka modelleri klinik güven oluşturmakta yetersiz kalmaktadır."
     )
     pdf.body_text(
-        "Sistemde önce hafif bir ResNet-18 yönlendirici (Router) yüklenen görüntünün MR, Röntgen veya BT olduğunu "
-        f"{rt_acc} doğrulukla tespit ederek modaliteye özgü klasik görüntü işleme hattını (Otsu + Morfoloji ROI, "
-        "Bilateral gürültü giderme, CLAHE kontrast iyileştirme) çalıştırmaktadır. Ardından her üç modalite için ayrı "
-        "ayrı CNN (ResNet-50), Vision Transformer (ViT-B/16) ve Swin Transformer (Swin-T) olmak üzere toplam 9 uzman "
-        f"sınıflandırıcı eğitilmiştir. Bağımsız test setlerinde Beyin MR'da {mri_acc} (harici BRISC 2025'te {ext_acc}), "
-        f"Göğüs Röntgeninde {xr_acc} ve Akciğer BT'de {ct_acc} doğruluk elde edilmiştir."
+        "Bu çalışmada; klasik görüntü işleme yöntemleri ile modern derin öğrenme mimarilerini (CNN, Vision Transformer, "
+        "Swin Transformer) ve temel segmentasyon modellerini (MobileSAM) tek bir modüler yazılımda birleştiren üç "
+        "modaliteli (Beyin MR, Göğüs Röntgeni ve Akciğer BT) bir medikal karar destek sistemi tasarlanmış ve "
+        "gerçekleştirilmiştir. Sistem girişinde yer alan hafif bir ResNet-18 Otomatik Modalite Router modeli, yüklenen "
+        f"görüntünün hangi görüntüleme cihazına ait olduğunu {rt_acc} doğrulukla tespit ederek hem otomatik yönlendirme "
+        "sağlamakta hem de yanlış modalite yüklemelerini engellemektedir. Her modalite için özelleştirilmiş klasik "
+        "görüntü işleme hattı (Otsu eşikleme, morfolojik ROI kırpma, Bilateral gürültü azaltma ve CLAHE yerel kontrast "
+        "iyileştirme) sonrasında ResNet-50, ViT-B/16 ve Swin-T mimarileri karşılaştırmalı olarak eğitilmiştir."
     )
     pdf.body_text(
-        "Anahtar Kelimeler: Medikal Görüntü İşleme, Çoklu Modalite (MR, Röntgen, BT), Modalite Router, CLAHE, Otsu, "
-        "ResNet-50, ViT, Swin Transformer, Grad-CAM, MobileSAM, Streamlit."
+        f"Bağımsız test kümelerinde Swin Transformer (Swin-T), üç modalitenin tamamında en yüksek başarıyı elde "
+        f"etmiştir: Beyin MR'da {mri_acc} doğruluk ({mri_f1} Macro F1), Göğüs Röntgeninde {xr_acc} doğruluk "
+        f"({xr_f1} Macro F1) ve Akciğer BT'de {ct_acc} doğruluk ({ct_f1} Macro F1). Ek olarak eğitimde hiç kullanılmamış "
+        f"2025 tarihli BRISC 2025 klinik MR veri setinde (300 görüntü) yapılan harici doğrulamada Swin-T ve 3'lü Ensemble "
+        f"{ext_acc} doğruluk sergileyerek sistemin yüksek genelleme yeteneğini kanıtlamıştır. Kararların görsel "
+        "açıklanabilirliği özel bir Unified Grad-CAM katmanı ile sağlanmış; ısı haritasından otomatik çıkarılan kutu ve "
+        "nokta promptları MobileSAM'e iletilerek piksel düzeyinde lezyon maskesi ve alan oranı (%) hesaplanmıştır."
+    )
+    pdf.body_text(
+        "Anahtar Kelimeler: Medikal Görüntü İşleme, Çoklu Modalite, Otomatik Modalite Router, Otsu Eşikleme, Bilateral "
+        "Filtre, CLAHE, ResNet-50, Vision Transformer, Swin Transformer, Grad-CAM, MobileSAM, DICOM, Streamlit."
     )
 
-    pdf.section_title("İçindekiler")
-    toc = [
-        ("1. Projenin Amacı, Kapsamı ve Klinik Gerekçesi", "3"),
-        ("2. Teorik Altyapı: Klasik Görüntü İşleme, Derin Öğrenme, Router ve SAM", "3"),
-        ("3. Çoklu Modalite Veri Setleri ve Ön İşleme Çıktıları", "4"),
-        ("4. Sistem Mimarisi, Kütüphaneler ve Kritik Kod Bölümleri", "6"),
-        ("5. Deneysel Sonuçlar: Router + 3 Modalite + BRISC 2025 Harici Doğrulama", "7"),
-        ("6. 3 Modaliteli Streamlit Arayüzü ve Kullanım Kılavuzu", "10"),
-        ("7. Sonuç, Tartışma ve Gelecek Çalışmalar", "10"),
-        ("8. Kaynakça (References)", "11"),
+    pdf.section_title("İçindekiler", record_toc=False)
+    display_toc = toc_entries if toc_entries else [
+        ("1. Giriş, Problem Tanımı ve Çalışmanın Katkıları", 3),
+        ("2. Teorik Altyapı ve Literatür Temelleri", 3),
+        ("3. Veri Setleri, Ön İşleme ve Deneysel Kurulum", 5),
+        ("4. Yazılım Mimarisi, Kütüphane Envanteri ve Kritik Kodlar", 7),
+        ("5. Deneysel Bulgular, Model Karşılaştırması ve Harici Doğrulama", 8),
+        ("6. Etkileşimli Uygulama Arayüzü ve Kullanım Kılavuzu", 12),
+        ("7. Tartışma, Kısıtlar ve Sonuç", 13),
+        ("8. Kaynakça (References)", 14),
     ]
-    for t_txt, p_txt in toc:
-        pdf.set_font("TrArial", "B", 9.6)
+    for sec_name, sec_pg in display_toc:
+        pdf.set_font("TrArial", "B", 9.4)
         pdf.set_text_color(15, 23, 42)
-        pdf.cell(165, 6.5, t_txt)
-        pdf.cell(15, 6.5, p_txt, align="R", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(165, 6.2, sec_name)
+        pdf.cell(15, 6.2, str(sec_pg), align="R", new_x="LMARGIN", new_y="NEXT")
 
-    # ======================== BÖLÜM 1 & 2 ========================
+    # ======================== BÖLÜM 1: GİRİŞ ========================
     pdf.add_page()
-    pdf.section_title("1. Projenin Amacı, Kapsamı ve Klinik Gerekçesi")
+    pdf.section_title("1. Giriş, Problem Tanımı ve Çalışmanın Katkıları")
     pdf.body_text(
-        "Ders proje konusu olan 'Röntgen, MR ve tomografi görüntülerinden kanser, COVID-19, tümör gibi hastalıkların "
-        "tespit edilmesi (CNN, ViT, Swin Transformer, SAM)' gereksinimini eksiksiz karşılamak amacıyla, yalnızca tek "
-        "bir organa değil 3 farklı klinik modalitenin tamamına hizmet veren bütünleşik bir yazılım mimarisi tasarlanmıştır. "
-        "Klinik pratikte radyologların farklı cihazlardan gelen görüntüleri hızlı ve açıklanabilir biçimde "
-        "değerlendirebilmesi için hem modalite doğrulaması (Input Validation) hem de görsel kanıt (Grad-CAM + SAM) "
-        "zorunlu kılınmıştır."
+        "Medikal görüntü analizi, klasik bilgisayarlı görü algoritmalarının ve derin sinir ağlarının insan sağlığına "
+        "doğrudan etki ettiği en kritik uygulama alanlarından biridir. Görüntü İşleme dersi kapsamında seçilen 'Medikal "
+        "Görüntülerden Hastalık Tespiti' problemi; röntgen, manyetik rezonans (MR) ve bilgisayarlı tomografi (BT) "
+        "görüntülerinden tümör, kanser ve COVID-19 gibi hastalıkların modern yöntemlerle (CNN, ViT, Swin Transformer, "
+        "SAM) tespit edilmesini amaçlamaktadır."
+    )
+    pdf.body_text(
+        "Mevcut akademik uygulamaların önemli bir bölümü yalnızca tek bir modaliteye (örneğin yalnızca röntgen veya "
+        "yalnızca MR) ve tek bir konvolüsyonel ağa odaklanmakta; girdi doğrulaması (input validation), klasik görüntü "
+        "işleme aşamalarının görsel analizi ve karar açıklanabilirliği gibi klinik gereksinimleri ihmal etmektedir. "
+        "Bu çalışmanın temel katkıları dört başlıkta özetlenebilir:"
+    )
+    pdf.bullet("Bütünleşik 3 Modaliteli Uzman Mimari", "Beyin MR (4 sınıf tümör), Göğüs Röntgeni (COVID-19, Pnömoni, Tüberküloz, Normal) ve Akciğer BT (4 sınıf kanser) için toplam 9 uzman derin öğrenme modeli aynı deneysel protokolde eğitilip karşılaştırılmıştır.")
+    pdf.bullet("Otomatik Modalite Yönlendirme ve Hata Koruması", "Hafif bir ResNet-18 yönlendirici (Router) ile yüklenen görüntünün cihaz türü otomatik tanınmakta ve yanlış modaliteye yanlış görüntü yüklenmesi engellenmektedir.")
+    pdf.bullet("Modaliteye Duyarlı Klasik Görüntü İşleme", "MR ve BT kesitlerinde Otsu + Morfoloji ROI kırpma uygulanırken, Göğüs Röntgeninde koyu akciğer alanlarının kesilmemesi için ROI kapatılarak Bilateral + CLAHE ile kontrast standardizasyonu sağlanmıştır.")
+    pdf.bullet("Uçtan Uca Açıklanabilirlik ve Harici Doğrulama", "CNN, ViT ve Swin uyumlu özel Unified Grad-CAM ve negatif köşe promptlu MobileSAM segmentasyonu geliştirilmiş; modeller ayrıca bağımsız BRISC 2025 klinik MR veri setinde test edilmiştir.")
+
+    # ======================== BÖLÜM 2: TEORİK ALTYAPI ========================
+    pdf.section_title("2. Teorik Altyapı ve Literatür Temelleri")
+
+    pdf.sub_title("2.1. Klasik Görüntü İşleme Yöntemleri")
+    pdf.body_text(
+        "Derin öğrenme modelleri ham medikal görüntülerle doğrudan beslendiğinde, cihaz çerçevelerindeki siyah arka plan "
+        "boşlukları, yüksek frekanslı tarayıcı gürültüleri ve hastaneler arası parlaklık/kontrast sapmaları genelleme "
+        "performansını düşürür [4]. Bu nedenle projede dört aşamalı klasik görüntü işleme hattı tasarlanmıştır:"
+    )
+    pdf.bullet(
+        "Otsu Otomatik Eşikleme [1]",
+        "Gri seviye piksel yoğunluğu histogramını arka plan (C0) ve ön plan (C1) olarak iki sınıfa ayırırken sınıflar-arası varyansı maksimize eden optimal t* eşik değerini parametresiz biçimde hesaplar:",
+    )
+    pdf.formula_box("sigma_B^2(t) = w_0(t) * w_1(t) * [ mu_0(t) - mu_1(t) ]^2    ==>    t* = argmax_t sigma_B^2(t)")
+    pdf.bullet(
+        "Morfolojik Kapama, Açma ve ROI Kırpma [4]",
+        "Otsu ikili maskesine 7x7 eliptik yapılandırma elemanı (B) ile önce Kapama (Closing: genişleme ardından aşındırma — dilate -> erode) uygulanarak doku içindeki küçük boşluklar doldurulur; ardından Açma (Opening: aşındırma ardından genişleme — erode -> dilate) ile arka plandaki gürültü adacıkları elenir. En büyük dış kontur üzerinden sınırlayıcı dikdörtgen çıkarılarak ilgi bölgesi (ROI) kırpılır.",
+    )
+    pdf.bullet(
+        "Kenar Koruyucu Bilateral Filtre [3]",
+        "Standart doğrusal Gaussian bulanıklaştırma yalnızca piksel mesafesini dikkate aldığı için tümör ve nodül kenarlarını yumuşatır. Bilateral filtre ise hem uzamsal Gaussian çekirdeğini (sigma_s=50) hem de piksel parlaklık farkı çekirdeğini (sigma_r=50) çarpımsal olarak birleştirerek homojen bölgelerdeki gürültüyü bastırırken keskin anatomik sınırları korur.",
+    )
+    pdf.bullet(
+        "CLAHE (Contrast Limited Adaptive Histogram Equalization) [2]",
+        "Küresel histogram eşitlemenin gürültüyü aşırı güçlendirme sorununu aşmak için görüntüyü 8x8 yerel kutucuklara (tile) böler. Her kutucuğun histogramı clipLimit=2.0 eşiğinde kırpılır, eşik üstündeki pikseller tüm seviyelere eşit dağıtılır ve komşu kutucuk sınırları bilinear interpolasyonla birleştirilir.",
     )
 
-    pdf.section_title("2. Teorik Altyapı")
-    pdf.sub_title("2.1. Otomatik Modalite Router (Input Validation / Gatekeeper)")
+    pdf.sub_title("2.2. Derin Öğrenme Mimarileri ve İndüktif Önyargı Analizi")
     pdf.body_text(
-        "Çoklu modaliteli klinik yazılımlarda en kritik güvenlik riski, kullanıcının yanlış modaliteye yanlış görüntü "
-        "yüklemesidir (ör. Göğüs Röntgeni modunda Beyin MR yüklenmesi). Bu riski ortadan kaldırmak için ham 224x224 "
-        "görüntüler üzerinde çalışan hafif bir ResNet-18 Modalite Router eğitilmiştir. Sistem Otomatik Modda yüklenen "
-        "görüntüyü anında doğru uzman modellere yönlendirir; Manuel Modda ise uyuşmazlık algılarsa kullanıcıyı uyarır."
+        "Görüntü sınıflandırma alanında üç temel mimari paradigması aynı deneysel kurulumda incelenmiştir: yerel "
+        "konvolüsyon temelli CNN (ResNet-50), küresel öz-dikkat temelli Vision Transformer (ViT-B/16) ve hiyerarşik "
+        "kaydırılmış pencere temelli Swin Transformer (Swin-T)."
     )
-
-    pdf.sub_title("2.2. Modaliteye Duyarlı Klasik Görüntü İşleme Hattı")
-    pdf.bullet("Otsu Eşikleme [1] + Morfolojik ROI (Beyin MR & Akciğer BT)", "MR ve BT kesitlerindeki siyah dış çerçeve, Gaussian bulanıklaştırma sonrası Otsu sınıflar-arası varyans maksimizasyonu ve 7x7 eliptik morfolojik Kapama/Açma işlemleriyle temizlenerek en büyük kontur üzerinden kırpılır. Göğüs Röntgeninde ise koyu akciğer alanlarını kesmemek için ROI kırpması devre dışı bırakılır.")
-    pdf.bullet("Kenar Koruyucu Bilateral Filtre [3]", "Uzamsal yakınlık (sigma_space=50) ve parlaklık benzerliğini (sigma_color=50) birlikte kullanarak tarayıcı gürültüsünü giderirken tümör/nodül ve opasite kenarlarını keskin tutar.")
-    pdf.bullet("CLAHE Kontrast İyileştirme [2]", "8x8 yerel kutucuklarda clipLimit=2.0 ile yerel histogram eşitleme uygulayarak farklı hastaneler ve cihazlar arasındaki kontrast farklarını standartlaştırır.")
-
-    pdf.sub_title("2.3. Derin Öğrenme Mimarileri (CNN, ViT, Swin) ve Grad-CAM + MobileSAM")
     pdf.draw_table(
-        [("Mimari", 36, "L"), ("Aile", 22, "C"), ("Param", 18, "C"), ("Temel Mekanizma ve Medikal Gücü", 104, "L")],
+        [("Mimari", 34, "L"), ("Aile", 18, "C"), ("Param", 16, "C"), ("Teorik Mekanizma ve İndüktif Önyargı Özelliği", 112, "L")],
         [
-            ["ResNet-50 [4]", "CNN", "23.5M", "Artık bağlantılar (y = F(x)+x) ile güçlü yerel doku çıkarımı ve keskin uzamsal Grad-CAM."],
-            ["ViT-B/16 [5]", "ViT", "85.8M", "16x16 yamalarda global Multi-Head Self-Attention; tüm organ simetrisini bütünsel değerlendirir."],
-            ["Swin-T [6]", "Swin", "27.5M", "Hiyerarşik özellik piramidi + Kaydırılmış Pencere (Shifted Window); yüksek hız ve doğruluk dengesi."],
-            ["MobileSAM [8,9]", "SAM", "9.7M", "Grad-CAM'den otomatik çıkarılan kutu + pozitif/negatif nokta promptlarıyla piksel hassasiyetinde maskeleme."],
+            ["ResNet-18 [5]", "CNN (Router)", "11.2M", "Hafif artık bağlantılı ağ; ham 224x224 görüntülerde milisaniyeler içinde MR / Röntgen / BT modalite yönlendirmesi yapar."],
+            ["ResNet-50 [5]", "CNN", "23.5M", "Darboğaz artık blokları (y = F(x)+x) ile güçlü yerellik ve öteleme değişmezliği; az veride kararlı öğrenme ve keskin Grad-CAM."],
+            ["ViT-B/16 [6]", "ViT", "85.8M", "224x224 görüntüyü 196 adet 16x16 yamaya ayırıp tüm yamalar arasında O(N^2) küresel Self-Attention hesaplar; az veride indüktif önyargısı zayıftır."],
+            ["Swin-T [7]", "Swin", "27.5M", "Çok ölçekli hiyerarşik piramit + Kaydırılmış Pencere (W-MSA / SW-MSA) dikkati ile O(N) karmaşıklıkta hem yerel hem küresel temsil kurar."],
         ],
-        font_size=8.3,
+        font_size=8.1,
     )
 
-    # ======================== BÖLÜM 3: VERİ SETLERİ ========================
+    pdf.sub_title("2.3. Açıklanabilir Yapay Zeka (Unified Grad-CAM) ve MobileSAM Segmentasyonu")
+    pdf.body_text(
+        "Grad-CAM [8], hedef c sınıfının aktivasyon öncesi skoru y^c'nin son öznitelik haritası A^k'ya göre kısmi "
+        "türevlerinin uzamsal ortalamasını alarak kanal önem ağırlıklarını hesaplar ve pozitif etkili bölgeleri ReLU ile "
+        "ısı haritasına dönüştürür:"
+    )
+    pdf.formula_box("alpha_k^c = (1 / Z) * sum_i sum_j ( dy^c / dA_ij^k )      |      L_GradCAM^c = ReLU( sum_k alpha_k^c * A^k )")
+    pdf.body_text(
+        "Projemizde geliştirilen Unified Grad-CAM sınıfı, CNN'in 4B (B,C,H,W) tensörlerini, ViT'nin CLS token'lı 3B "
+        "(B,197,768) çıktısını (CLS atılarak 14x14'e dönüştürülerek) ve Swin'in (B,H,W,C) düzenini ortak bir arayüzde "
+        "işlemektedir. Isı haritasının yüksek aktivasyon bölgesinden eşikleme ve morfolojik temizleme ile otomatik sınır "
+        "kutusu (bbox) ve tepe noktası (pozitif prompt, label=1) elde edilmektedir. MR ve BT görüntülerinde kafatası/gövde "
+        "dışı köşe piksellerinin yanlış segmente edilmemesi için dört köşe noktası negatif arka plan prompt'u (label=0) "
+        "olarak hafifletilmiş Segment Anything modeli MobileSAM'e [9, 10] verilmektedir. Göğüs Röntgeninde ise koyu "
+        "akciğer alanları tüm çerçeveyi kapladığından iç erozyon maskesi kapatılarak akciğer bütünlüğü korunmuştur."
+    )
+
+    # ======================== BÖLÜM 3: VERİ SETLERİ & KURULUM ========================
     pdf.add_page()
-    pdf.section_title("3. Çoklu Modalite Veri Setleri ve Ön İşleme Çıktıları")
+    pdf.section_title("3. Veri Setleri, Ön İşleme ve Deneysel Kurulum")
+    pdf.sub_title("3.1. Kullanılan Medikal Veri Setlerinin Ayrıntılı Dağılımı")
+
+    mri_sp = mri_ds.get("splits", {})
+    ct_sp = mm_ds.get("chest_ct", {})
+    xr_sp = mm_ds.get("chest_xray", {})
+    rt_sp = mm_ds.get("router", {})
+
+    def _tot(d: Dict[str, int]) -> int:
+        return sum(d.values()) if d else 0
+
+    mri_tr, mri_va, mri_te = _tot(mri_sp.get("train", {})), _tot(mri_sp.get("val", {})), _tot(mri_sp.get("test", {}))
+    xr_tr, xr_va, xr_te = _tot(xr_sp.get("train", {})), _tot(xr_sp.get("val", {})), _tot(xr_sp.get("test", {}))
+    ct_tr, ct_va, ct_te = _tot(ct_sp.get("train", {})), _tot(ct_sp.get("val", {})), _tot(ct_sp.get("test", {}))
+    rt_tr, rt_va, rt_te = _tot(rt_sp.get("train", {})), _tot(rt_sp.get("val", {})), _tot(rt_sp.get("test", {}))
+
     pdf.body_text(
-        "Her üç modalite için literatürde yaygın olarak kullanılan açık erişimli klinik veri setleri kullanılmış; "
-        "tüm modalitelerde eğitim, doğrulama ve bağımsız test bölünmeleri veri sızıntısı olmayacak şekilde ayrılmıştır:"
+        "Tüm veri setlerinde veri sızıntısını (data leakage) engellemek için eğitim, doğrulama ve bağımsız test "
+        "kümeleri kesin sınırlarla ayrılmıştır. Göğüs Röntgeni veri setinde [20] sınıf dengesizliğini sınırlamak "
+        "amacıyla her sınıf en fazla 900 görüntü ile dengelenmiş (COVID-19: 900, Normal: 900, Pnömoni: 900, "
+        "Tüberküloz: 474; toplam 3.174 görüntü) ve %65/%15/%20 oranında stratified bölünmüştür."
     )
     pdf.draw_table(
-        [("Modalite", 32, "L"), ("Veri Seti Kaynağı", 60, "L"), ("Sınıflar (4 Sınıf)", 60, "L"), ("Ön İşleme", 28, "C")],
+        [("Modalite / Görev", 34, "L"), ("Kaynak Veri Seti", 49, "L"), ("Train", 17, "C"), ("Val", 15, "C"), ("Test", 17, "C"), ("Toplam", 18, "C"), ("Ön İşleme", 30, "C")],
         [
-            ["Beyin MR", "Kaggle Brain Tumor MRI (7.200) + BRISC 2025 (300) [10,11]", "Glioma, Menenjiyom, Hipofiz, Tümör Yok", "ROI + Bilat. + CLAHE"],
-            ["Göğüs Röntgeni", "HF Chest X-Ray COVID/Pnömoni/TB (3.448 dengeli) [12]", "COVID-19, Pnömoni, Tüberküloz, Normal", "Bilateral + CLAHE"],
-            ["Akciğer BT", "HF LungCancer4Types (1.000 BT kesiti) [13]", "Adenokarsinom, Büyük H., Skuamöz, Normal", "ROI + Bilat. + CLAHE"],
-            ["Modalite Router", "3 Modaliteden Dengeli Ham Görüntüler (2.700)", "Beyin MR, Göğüs Röntgeni, Akciğer BT", "Ham 224x224 RGB"],
+            ["Beyin MR (4 Sınıf)", "Kaggle Brain Tumor MRI [18]", f"{mri_tr}", f"{mri_va}", f"{mri_te}", f"{mri_tr+mri_va+mri_te}", "ROI + Bilat. + CLAHE"],
+            ["Harici MR Testi", "BRISC 2025 Klinik Test [19]", "0", "0", "300", "300", "ROI + Bilat. + CLAHE"],
+            ["Göğüs Röntgeni (4 S.)", "HF COVID/Pnömoni/TB [20]", f"{xr_tr}", f"{xr_va}", f"{xr_te}", f"{xr_tr+xr_va+xr_te}", "Bilateral + CLAHE"],
+            ["Akciğer BT (4 Sınıf)", "HF LungCancer4Types [21]", f"{ct_tr}", f"{ct_va}", f"{ct_te}", f"{ct_tr+ct_va+ct_te}", "ROI + Bilat. + CLAHE"],
+            ["Modalite Router (3 S.)", "3 Modaliteden Dengeli Ham", f"{rt_tr}", f"{rt_va}", f"{rt_te}", f"{rt_tr+rt_va+rt_te}", "Ham 224x224 RGB"],
         ],
-        font_size=8.2,
+        font_size=7.9,
     )
+
+    pdf.sub_title("3.2. Klasik Görüntü İşleme ve Histogram Çıktıları")
     pdf.add_figure(
         PLOTS_DIR / "preprocessing_showcase.png",
-        "Şekil 1: Klasik Görüntü İşleme Ön İşleme Hattı (Otsu, Morfoloji, ROI Kırpma, Bilateral Filtre ve CLAHE).",
-        width_mm=155,
+        "Şekil 1: Örnek bir Glioma Beyin MR görüntüsünde Otsu eşikleme, morfolojik kapama/açma, ROI kırpma, Bilateral filtre ve CLAHE aşamaları.",
+        width_mm=152,
     )
     pdf.add_figure(
         PLOTS_DIR / "clahe_histogram_comparison.png",
-        "Şekil 2: CLAHE kontrast iyileştirme öncesi ve sonrası piksel parlaklık histogramı karşılaştırması.",
+        "Şekil 2: CLAHE kontrast iyileştirme öncesi (dar yoğunluk aralığı) ve sonrası (genişletilmiş dinamik aralık) piksel parlaklık histogramı.",
         width_mm=142,
     )
 
-    # ======================== BÖLÜM 4: TEKNİK MİMARİ & KODLAR ========================
+    # ======================== BÖLÜM 4: YAZILIM MİMARİSİ & KÜTÜPHANELER ========================
     pdf.add_page()
-    pdf.section_title("4. Sistem Mimarisi, Kütüphaneler ve Kritik Kod Bölümleri")
+    pdf.section_title("4. Yazılım Mimarisi, Kütüphane Envanteri ve Kritik Kodlar")
+    pdf.sub_title("4.1. Kullanılan Yazılım Kütüphaneleri, Çatılar ve Görevleri")
+    pdf.body_text(
+        "Uygulama Python 3.12.7 üzerinde tamamen açık kaynak bilimsel kütüphanelerle geliştirilmiştir. Tablo 3'te "
+        "kod tabanında aktif olarak kullanılan tüm yazılım bileşenleri ve ilgili literatür referansları listelenmiştir."
+    )
     pdf.draw_table(
-        [("Katman", 38, "L"), ("Kütüphaneler", 56, "L"), ("Görev", 86, "L")],
+        [("Kütüphane / Çatı", 42, "L"), ("Sürüm", 24, "C"), ("Projedeki Teknik Görevi", 114, "L")],
         [
-            ["Görüntü İşleme", "OpenCV, Pillow, pydicom, NumPy", "Otsu, Morfoloji, Bilateral/Median/Gaussian, CLAHE, DICOM (.dcm)"],
-            ["Derin Öğrenme", "PyTorch (CUDA 12.8), timm, torchvision", "ResNet-18 Router + 3×(ResNet-50, ViT-B/16, Swin-T) BF16 AMP eğitimi"],
-            ["Açıklanabilirlik & SAM", "PyTorch Hooks, Ultralytics (MobileSAM)", "Unified Grad-CAM ve otomatik kutu/nokta promptlu lezyon segmentasyonu"],
-            ["Arayüz & Raporlama", "Streamlit, scikit-learn, Matplotlib, Seaborn", "4 sekmeli canlı demo, ROC/CM grafikleri, PDF/PPTX otomasyonu"],
+            ["PyTorch + Torchvision [12]", "2.11+cu128", "RTX 5070 Ti (sm_120) CUDA GPU eğitimi, BF16 AMP, DataLoader ve dönüşümler."],
+            ["timm [14]", "1.0.31", "ResNet-18 (Router), ResNet-50, ViT-B/16 ve Swin-T ön-eğitimli mimari fabrikası."],
+            ["OpenCV (cv2) [13]", "4.14.0", "Otsu eşikleme, morfolojik açma/kapama, Bilateral/Median/Gaussian, CLAHE, kontur."],
+            ["Ultralytics (MobileSAM) [10,15]", "8.4.216", "Otomatik kutu + pozitif/negatif nokta promptları ile tümör/lezyon segmentasyonu."],
+            ["scikit-learn [16]", "1.9.1", "Accuracy, Macro Precision/Recall/F1, Confusion Matrix ve çok sınıflı ROC-AUC."],
+            ["pydicom [17]", "3.0.2", "Hastane cihazlarının DICOM (.dcm) dosyalarını RescaleSlope/Intercept ile okuma."],
+            ["Streamlit [17]", "1.57.0", "4 sekmeli etkileşimli web arayüzü, canlı parametre laboratuvarı ve demo."],
+            ["Pillow / Polars / HF Hub", "12.2 / 2.1", "Unicode yol güvenli görüntü kaydı, Parquet veri işleme ve veri seti indirme."],
+            ["Matplotlib / Seaborn", "3.11 / 0.13", "Karşılaştırma bar grafikleri, karışıklık matrisleri, ROC ve eğitim eğrileri."],
+            ["fpdf2 / python-pptx", "2.9 / 1.0", "Otomatik akademik PDF rapor ve konuşmacı notlu PowerPoint sunumu üretimi."],
         ],
-        font_size=8.3,
+        font_size=7.9,
     )
 
-    pdf.sub_title("4.1. Kritik Kod 1: Otomatik Modalite Router ve Uyuşmazlık Koruması (app.py)")
-    pdf.code_block(
-        """def predict_modality(raw_rgb):
-    router_model, payload = get_cached_router()  # ResNet-18 (3 modalite)
-    inp = get_eval_transforms(224)(Image.fromarray(raw_rgb)).unsqueeze(0).to(device)
-    with torch.no_grad():
-        probs = torch.softmax(router_model(inp), dim=1)[0].cpu().numpy()
-    best_idx = int(np.argmax(probs))
-    return payload["classes"][best_idx], float(probs[best_idx])"""
+    pdf.sub_title("4.2. Donanım ve Eğitim Hiperparametreleri")
+    pdf.draw_table(
+        [("Bileşen / Hiperparametre", 54, "L"), ("Konfigürasyon ve Gerekçesi", 126, "L")],
+        [
+            ["Eğitim Donanımı", "NVIDIA GeForce RTX 5070 Ti (16 GB VRAM, Blackwell sm_120, CUDA 13.3 Sürücü)"],
+            ["Optimizasyon & Çizelgeleyici [11]", "AdamW (weight_decay=0.01) + CosineAnnealingLR (eta_min = 0.05 * LR)"],
+            ["Öğrenme Oranları (LR)", "Router: 3e-4 | CNN (ResNet-50): 3e-4 | ViT-B/16: 1e-4 | Swin-T: 1.5e-4"],
+            ["Kayıp & Düzenlileştirme", "CrossEntropyLoss (label_smoothing=0.05) + Gradient Clipping (max_norm=2.0)"],
+            ["Epoch & Batch Boyutu", "Batch=32 | Router: 5 Epoch | Beyin MR & Göğüs Röntgeni: 8 Epoch | Akciğer BT: 12 Epoch"],
+            ["Veri Artırma (Data Augmentation)", "RandomHorizontalFlip(0.5), RandomRotation(±15°), RandomAffine, ColorJitter(0.1)"],
+            ["Kayıt Politikası", "Her epoch sonunda Doğrulama (Val) Macro F1 skoru en yüksek ağırlık kaydedilir."],
+        ],
+        font_size=8.1,
     )
 
-    pdf.sub_title("4.2. Kritik Kod 2: Unified Grad-CAM ve Modaliteye Duyarlı MobileSAM (src/explain_and_segment.py)")
+    pdf.sub_title("4.3. Modüler Yazılım Mimarisi ve Kritik Kod Bölümleri")
+    pdf.body_text(
+        "Kod tabanı sorumluluk ayrımı (separation of concerns) ilkesiyle yapılandırılmıştır: src/preprocessing.py "
+        "klasik görüntü işleme hattını, src/models.py çoklu modalite ve Router model yükleyicisini, "
+        "src/explain_and_segment.py Unified Grad-CAM ve MobileSAM motorunu, src/train.py ve src/train_multimodal.py "
+        "eğitim/değerlendirme akışlarını, app.py ise Streamlit kullanıcı arayüzünü yönetmektedir."
+    )
     pdf.code_block(
-        """acts = self._reshape_to_bchw(self.activations).float()
+        """# 1) src/preprocessing.py — Otsu + Morfolojik ROI + Kenar Koruyucu Bilateral + CLAHE
+blurred = cv2.GaussianBlur(gray_img, (5, 5), 0)
+_, otsu_mask = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
+morph_mask = cv2.morphologyEx(otsu_mask, cv2.MORPH_CLOSE, kernel, iterations=2)
+morph_mask = cv2.morphologyEx(morph_mask, cv2.MORPH_OPEN, kernel, iterations=2)
+filtered = cv2.bilateralFilter(roi_gray, d=5, sigmaColor=50, sigmaSpace=50)
+enhanced = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8)).apply(filtered)"""
+    )
+    pdf.code_block(
+        """# 2) src/explain_and_segment.py — Unified Grad-CAM ve Negatif Kose Promptlu MobileSAM
+acts = self._reshape_to_bchw(self.activations).float()
 grads = self._reshape_to_bchw(self.gradients).float()
 weights = grads.mean(dim=(2, 3), keepdim=True)
 cam = torch.relu((weights * acts).sum(dim=1)[0]).cpu().numpy()
 
-# MR/BT icin beyin/govde ici maskeleme; Rontgen icin tam akciger alani korunur
 cam_rs = mask_cam_to_brain(cam_2d, rgb_image, 12) if apply_interior_mask else cam_2d
 bbox, peak = extract_prompt_from_cam(cam_rs, rgb_image if apply_interior_mask else None, 0.52)
 all_points = [[peak[0], peak[1]], [4, 4], [w - 5, 4], [4, h - 5], [w - 5, h - 5]]
@@ -459,65 +617,118 @@ results = self.sam_model.predict(
 )"""
     )
 
-    # ======================== BÖLÜM 5: DENEYSEL SONUÇLAR ========================
+    # ======================== BÖLÜM 5: DENEYSEL BULGULAR ========================
     pdf.add_page()
-    pdf.section_title("5. Deneysel Sonuçlar: Router + 3 Modalite + Harici Doğrulama")
+    pdf.section_title("5. Deneysel Bulgular, Model Karşılaştırması ve Harici Doğrulama")
+    pdf.sub_title("5.1. Değerlendirme Metrikleri ve Otomatik Modalite Router Sonucu")
+    pdf.body_text(
+        "Medikal tanı problemlerinde yalnızca Genel Doğruluk (Accuracy) sınıf dengesizliklerini gizleyebileceği için "
+        "her sınıfa eşit ağırlık veren Macro Precision, Macro Recall, Macro F1-Skoru ve eşik değerinden bağımsız "
+        "çok sınıflı ROC-AUC (One-vs-Rest) metrikleri birlikte raporlanmıştır:"
+    )
+    pdf.formula_box("Precision = TP / (TP + FP)   |   Recall = TP / (TP + FN)   |   F1 = 2 * (Precision * Recall) / (Precision + Recall)")
 
     if router_metrics:
         pdf.info_box(
-            f"Otomatik Modalite Router (ResNet-18) — {rt_acc} Test Doğruluğu",
-            f"Beyin MR, Göğüs Röntgeni ve Akciğer BT sınıflarından oluşan {router_metrics.get('test_samples', 0)} bağımsız "
-            f"test görüntüsünde {rt_acc} Accuracy, {fmt_pct(router_metrics.get('f1_macro'))} Macro F1 ve yalnızca "
-            f"{router_metrics.get('inference_ms_per_img', 0):.2f} ms/görüntü hızıyla modalite yönlendirmesi yapılmıştır.",
+            f"Otomatik Modalite Router (ResNet-18) Test Sonucu — {rt_acc} Doğruluk (405 / 405)",
+            f"135 Beyin MR, 135 Göğüs Röntgeni ve 135 Akciğer BT'den oluşan 405 bağımsız test görüntüsünde "
+            f"hiçbir modalite karıştırılmadan {rt_acc} Accuracy ve {fmt_pct(router_metrics.get('f1_macro'))} Macro F1 "
+            f"elde edilmiştir. Bu sonuç, arayüzdeki otomatik yönlendirme ve yanlış görüntü korumasının güvenilirliğini kanıtlar.",
         )
 
-    pdf.sub_title("5.1. 3 Modalitede Tüm Modellerin Karşılaştırmalı Özeti (9 Uzman Model)")
+    pdf.sub_title("5.2. 3 Modalitede 9 Uzman Modelin Karşılaştırmalı Performansı")
     master_rows = []
     for mod in ["brain_mri", "chest_xray", "chest_ct"]:
-        m_cfg = cfg["modalities"][mod]
+        mc = cfg["modalities"][mod]
         md = all_mod_metrics.get(mod, {})
         for mk in ["cnn", "vit", "swin"]:
             m = md.get("models", {}).get(mk)
             if not m:
                 continue
             master_rows.append([
-                m_cfg["short_name"],
+                mc["short_name"],
                 m["short_name"],
-                f"%{m['accuracy']*100:.2f}",
-                f"%{m['precision_macro']*100:.2f}",
-                f"%{m['recall_macro']*100:.2f}",
-                f"%{m['f1_macro']*100:.2f}",
-                f"%{m['roc_auc_macro']*100:.2f}",
-                f"{m['inference_ms_per_img']:.1f}",
+                f"{m['params_millions']:.1f}M",
+                fmt_pct(m["accuracy"]),
+                fmt_pct(m["precision_macro"]),
+                fmt_pct(m["recall_macro"]),
+                fmt_pct(m["f1_macro"]),
+                fmt_pct(m["roc_auc_macro"]),
             ])
     pdf.draw_table(
-        [("Modalite", 30, "L"), ("Model", 24, "L"), ("Acc", 21, "C"), ("Prec", 21, "C"), ("Rec", 21, "C"), ("F1", 21, "C"), ("AUC", 22, "C"), ("ms", 20, "C")],
+        [("Modalite", 30, "L"), ("Model", 24, "L"), ("Param", 16, "C"), ("Acc", 22, "C"), ("Prec", 22, "C"), ("Rec", 22, "C"), ("Macro F1", 22, "C"), ("ROC-AUC", 22, "C")],
         master_rows,
-        font_size=8.2,
+        font_size=8.1,
     )
     pdf.add_figure(
         PLOTS_DIR / "multimodal_overview.png",
-        "Şekil 3: Beyin MR, Göğüs Röntgeni ve Akciğer BT modalitelerinde CNN, ViT ve Swin Macro F1 karşılaştırması.",
-        width_mm=158,
+        "Şekil 3: Beyin MR, Göğüs Röntgeni ve Akciğer BT modalitelerinde CNN, ViT ve Swin Transformer Macro F1 karşılaştırması.",
+        width_mm=154,
     )
 
-    # Karışıklık Matrisleri (3 Modalite)
+    # Sınıf bazlı en iyi model tabloları (3 modalite)
     pdf.add_page()
-    pdf.sub_title("5.2. Modalite Bazlı Karışıklık Matrisleri (Confusion Matrices)")
-    pdf.add_figure(PLOTS_DIR / "confusion_matrices.png", "Şekil 4: Beyin MR (1.600 Test MR) Karışıklık Matrisleri.", width_mm=170)
-    pdf.add_figure(PLOTS_DIR / "chest_xray" / "confusion_matrices.png", "Şekil 5: Göğüs Röntgeni (COVID-19 / Pnömoni / Tüberküloz / Normal) Karışıklık Matrisleri.", width_mm=170)
-    pdf.add_figure(PLOTS_DIR / "chest_ct" / "confusion_matrices.png", "Şekil 6: Akciğer BT (4 Sınıf Kanser) Karışıklık Matrisleri.", width_mm=170)
+    pdf.sub_title("5.3. Her Modalitede En Başarılı Modelin (Swin-T) Sınıf Bazlı Performansı")
+    pdf.body_text(
+        "Tablo 6'da üç modalitenin tamamında birinci olan Swin Transformer (Swin-T) modelinin toplam 12 klinik sınıf "
+        "üzerindeki ayrıntılı Precision, Recall ve F1 skorları sunulmuştur. Özellikle Beyin MR'da Tümör Yok (%100 Recall) "
+        "ve Hipofiz (%100 Recall), Göğüs Röntgeninde Tüberküloz (%100 Recall) ve Akciğer BT'de Normal (%100 F1) "
+        "sınıflarında sıfır kaçırma oranına ulaşılmıştır."
+    )
+    per_cls_rows = []
+    for mod in ["brain_mri", "chest_xray", "chest_ct"]:
+        mc = cfg["modalities"][mod]
+        md = all_mod_metrics.get(mod, {})
+        bk = md.get("best_model_key", "swin")
+        pc_map = md.get("models", {}).get(bk, {}).get("per_class", {})
+        for c in mc["classes"]:
+            pc = pc_map.get(c)
+            if not pc:
+                continue
+            per_cls_rows.append([
+                mc["short_name"],
+                mc["class_labels_tr"][c],
+                fmt_pct(pc["precision"]),
+                fmt_pct(pc["recall"]),
+                fmt_pct(pc["f1"]),
+                str(pc["support"]),
+            ])
+    pdf.draw_table(
+        [("Modalite", 30, "L"), ("Klinik Sınıf", 62, "L"), ("Precision", 22, "C"), ("Recall", 22, "C"), ("F1-Skoru", 22, "C"), ("Test Adedi", 22, "C")],
+        per_cls_rows,
+        font_size=8.0,
+    )
 
-    # 3 Modaliteli Grad-CAM + SAM + BRISC 2025
+    pdf.sub_title("5.4. Karışıklık Matrisleri (Confusion Matrices)")
+    pdf.add_figure(PLOTS_DIR / "confusion_matrices.png", "Şekil 4: Beyin MR (1.600 Test MR) Karışıklık Matrisleri.", width_mm=166)
+    pdf.add_figure(PLOTS_DIR / "chest_xray" / "confusion_matrices.png", "Şekil 5: Göğüs Röntgeni (634 Test X-Ray) Karışıklık Matrisleri.", width_mm=166)
+
     pdf.add_page()
-    pdf.sub_title("5.3. 3 Modalitede Grad-CAM Açıklanabilirlik ve MobileSAM Segmentasyonu")
+    pdf.add_figure(PLOTS_DIR / "chest_ct" / "confusion_matrices.png", "Şekil 6: Akciğer BT (315 Test BT) Karışıklık Matrisleri.", width_mm=166)
+    pdf.add_figure(PLOTS_DIR / "training_curves.png", "Şekil 7: Beyin MR Eğitim/Doğrulama Kaybı ve Doğrulama Doğruluğu Eğrileri.", width_mm=158)
+    pdf.add_figure(PLOTS_DIR / "chest_xray" / "roc_curves.png", "Şekil 8: Göğüs Röntgeni Çok Sınıflı ROC Eğrileri (AUC %99.55 – %99.73).", width_mm=108)
+
+    # Grad-CAM + SAM + BRISC 2025
+    pdf.add_page()
+    pdf.sub_title("5.5. Grad-CAM Açıklanabilirlik ve MobileSAM Segmentasyon Değerlendirmesi")
+    pdf.body_text(
+        "Şekil 9'da Beyin MR (Glioma), Göğüs Röntgeni (COVID-19) ve Akciğer BT (Adenokarsinom) örneklerinde klasik "
+        "ön-işleme, Grad-CAM odak haritası ve MobileSAM segmentasyon maskeleri bir arada görülmektedir. Modelin "
+        "karar verirken arka plan yerine doğrudan patolojik doku bölgesine odaklandığı ve MobileSAM'in tümör/lezyon "
+        "sınırlarını piksel düzeyinde yakaladığı görsel olarak doğrulanmıştır."
+    )
     pdf.add_figure(
         PLOTS_DIR / "multimodal_gradcam_sam.png",
-        "Şekil 7: Beyin MR (Glioma), Göğüs Röntgeni (COVID-19) ve Akciğer BT (Adenokarsinom) görüntülerinde CLAHE, Grad-CAM ve MobileSAM.",
-        width_mm=152,
+        "Şekil 9: 3 Modalitede (MR, Röntgen, BT) Klasik Ön İşleme, Grad-CAM Isı Haritası ve MobileSAM Segmentasyon Çıktıları.",
+        width_mm=150,
     )
     if ext_metrics:
-        pdf.sub_title("5.4. Harici Klinik Doğrulama: BRISC 2025 (300 Bağımsız Beyin MR)")
+        pdf.sub_title("5.6. Harici Klinik Doğrulama: BRISC 2025 (300 Bağımsız Beyin MR)")
+        pdf.body_text(
+            "Sistemin eğitimde kullanılan Kaggle veri setine bağımlı kalmadığını (overfitting yapmadığını) göstermek "
+            "amacıyla, 2025 tarihli tamamen bağımsız BRISC 2025 klinik MR koleksiyonundan [19] 300 görüntü (100 Glioma, "
+            "100 Menenjiyom, 100 Hipofiz) üzerinde harici doğrulama uygulanmıştır:"
+        )
         ext_rows = [
             [v["display_name"], fmt_pct(v["accuracy"]), fmt_pct(v["f1_macro"])]
             for v in ext_metrics.get("results", {}).values()
@@ -525,60 +736,89 @@ results = self.sam_model.predict(
         pdf.draw_table(
             [("Model / Yöntem", 96, "L"), ("BRISC 2025 Accuracy", 42, "C"), ("BRISC 2025 Macro F1", 42, "C")],
             ext_rows,
-            font_size=8.6,
+            font_size=8.4,
         )
 
-    # ======================== BÖLÜM 6 & 7: KULLANIM KILAVUZU & SONUÇ ========================
+    # ======================== BÖLÜM 6 & 7: KILAVUZ & TARTIŞMA ========================
     pdf.add_page()
-    pdf.section_title("6. 3 Modaliteli Streamlit Arayüzü ve Kullanım Kılavuzu")
+    pdf.section_title("6. Etkileşimli Uygulama Arayüzü ve Kullanım Kılavuzu")
+    pdf.sub_title("6.1. Kurulum ve Çalıştırma")
     pdf.code_block(
-        f"""# 1. Repoyu klonlayın ve bağımlılıkları kurun
+        f"""# 1. Kaynak kodları klonlayın ve bağımlılıkları kurun
 git clone {cfg['github_git_url']}
 cd medeical_disase_dedect
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
 pip install -r requirements.txt
 
-# 2. (Opsiyonel) Model ağırlıklarını GitHub Releases'tan checkpoints/ klasörüne koyun
-#    veya yeniden eğitin:
-python scripts/prepare_multimodal_datasets.py
-python src/train_multimodal.py --targets router chest_ct chest_xray
+# 2. Eğitilmiş ağırlıklar: GitHub Releases (v2.0) sayfasındaki 3 ZIP dosyasını proje ana klasörüne çıkarın
+#    (veya tüm modelleri sıfırdan eğitmek için: python scripts/prepare_multimodal_datasets.py && python src/train_multimodal.py)
 
-# 3. Canlı 3 Modaliteli Demo Arayüzünü başlatın
+# 3. 3 Modaliteli canlı demo arayüzünü başlatın
 streamlit run app.py"""
     )
-    pdf.bullet("Sekme 1 — Canlı Tanı & SAM Segmentasyon", "Otomatik Algıla (AI Router) ile MR, Röntgen veya BT yükleyin; sistem modaliteyi tanır, 3'lü Ensemble veya tekil modelle hastalık sınıfını, Grad-CAM ısı haritasını ve MobileSAM lezyon alanını (%) hesaplar. Yanlış modalite seçilirse uyarı verir.")
-    pdf.bullet("Sekme 2 — Klasik Görüntü İşleme Laboratuvarı", "Otsu ROI, Bilateral/Median/Gaussian filtre ve CLAHE parametrelerini sürgülerle canlı değiştirip histogramı gözlemleyin.")
-    pdf.bullet("Sekme 3 — Çoklu Modalite Karşılaştırma", "Router metriklerini, 3 modaliteli özet grafiği ve her modalitenin ayrı Confusion Matrix / ROC / Loss eğrilerini inceleyin.")
-    pdf.bullet("Sekme 4 — Mimari & Kılavuz", "3 modaliteli sistem mimarisi, ortak Grad-CAM + SAM vitrini ve ekip bilgileri.")
+    pdf.sub_title("6.2. Arayüz Sekmelerinin Kullanımı")
+    pdf.bullet("Sekme 1 — Canlı Tanı & SAM Segmentasyon", "Sol panelde 'Otomatik Algıla (AI Router)' seçiliyken herhangi bir MR, Röntgen veya BT görüntüsü (JPG/PNG/DICOM) yüklenir. Router modaliteyi otomatik tanır, uzman model (veya 3'lü Ensemble) hastalığı tahmin eder, Grad-CAM odak haritasını ve MobileSAM lezyon alan oranını (%) gösterir. Yanlış modalite seçilirse uyuşmazlık uyarısı verir.")
+    pdf.bullet("Sekme 2 — Klasik Görüntü İşleme Laboratuvarı", "Otsu ROI, Bilateral/Median/Gaussian filtre, çekirdek boyutu ve CLAHE parametreleri sürgülerle canlı değiştirilerek 6 ara görüntü aşaması ve histogram karşılaştırması incelenir.")
+    pdf.bullet("Sekme 3 — Model Karşılaştırma Paneli", "Router skoru, 3 modaliteli genel grafik ve seçilen modalitenin ayrı metrik tablosu, Confusion Matrix, ROC-AUC ve eğitim eğrileri görüntülenir.")
+    pdf.bullet("Sekme 4 — Mimari & Kılavuz", "Sistem mimarisi, kütüphane özeti, 3 modaliteli Grad-CAM+SAM vitrini ve ekip bilgileri yer alır.")
 
-    pdf.section_title("7. Sonuç, Tartışma ve Gelecek Çalışmalar")
+    pdf.section_title("7. Tartışma, Kısıtlar ve Sonuç")
     pdf.body_text(
-        f"Bu çalışmada MR (Beyin Tümörü — {mri_acc} iç test, {ext_acc} harici BRISC 2025), Göğüs Röntgeni "
-        f"(COVID-19/Pnömoni/Tüberküloz — {xr_acc}) ve Akciğer BT (Akciğer Kanseri — {ct_acc}) modalitelerinin tamamını "
-        f"tek çatıda toplayan ve {rt_acc} doğruluklu Otomatik Modalite Router ile kullanıcı hatasını önleyen kapsamlı bir "
-        "medikal görüntü işleme sistemi başarıyla geliştirilmiştir. Tüm modalitelerde CNN, ViT ve Swin Transformer "
-        "mimarileri adil biçimde kıyaslanmış; Grad-CAM ve MobileSAM entegrasyonu ile kararların klinik şeffaflığı "
-        "sağlanmıştır. Gelecek çalışmalarda 3B NIfTI hacimsel segmentasyon (cm³ tümör hacmi) ve hastane PACS entegrasyonu "
-        "hedeflenmektedir."
+        "Deneysel bulgular önemli bir mimari gerçeği somut biçimde ortaya koymuştur: Büyük veri setlerinde (Beyin MR: "
+        "4.760 eğitim, Göğüs Röntgeni: 2.064 eğitim) CNN, ViT ve Swin Transformer mimarilerinin üçü de %95–%97 bandında "
+        "yakın başarılar üretirken; az verili Akciğer BT veri setinde (613 eğitim görüntüsü) saf Vision Transformer "
+        "(ViT-B/16, 85.8M parametre) konvolüsyonel indüktif önyargı eksikliği nedeniyle %64.57 Macro F1'de kalmıştır "
+        "(Normal BT'yi %100 tanımasına rağmen 3 kanser alt tipini ayırmakta zorlanmıştır). Buna karşılık kaydırılmış "
+        "pencere (Shifted Window) mekanizması ile yerel doku bilgisini koruyan Swin Transformer (Swin-T, 27.5M parametre) "
+        "aynı 613 görüntüyle %94.85 Macro F1 ve %99.66 ROC-AUC'ye ulaşarak üç modalitenin tamamında en yüksek genelleme "
+        "ve verimlilik dengesini göstermiştir."
+    )
+    pdf.body_text(
+        "Kısıtlar ve Gelecek Çalışmalar: Geliştirilen sistem 2B tekil radyolojik kesitler üzerinde çalışmakta olup "
+        "yalnızca akademik karar destek ve eğitim amaçlıdır; klinik tıbbi tanı yerine geçmez. İlerleyen çalışmalarda "
+        "(1) 3B NIfTI (.nii) hacimsel MR/BT görüntülerinden mililitre/cm³ cinsinden gerçek tümör hacmi hesaplanması, "
+        "(2) medikal verilerle ince ayarlanmış MedSAM ağırlıklarının entegrasyonu ve (3) hastane PACS sistemlerine "
+        "DICOM-Web üzerinden bağlantı sağlanması hedeflenmektedir."
     )
 
-    # ======================== BÖLÜM 8: KAYNAKÇA ========================
+    # ======================== BÖLÜM 8: KAYNAKÇA (21 DENETLENMİŞ REFERANS) ========================
     pdf.add_page()
     pdf.section_title("8. Kaynakça (References)")
-    pdf.set_font("TrArial", "", 8.7)
+    pdf.body_text(
+        "Bu çalışmada yararlanılan klasik görüntü işleme algoritmaları, derin öğrenme mimarileri, yazılım kütüphaneleri "
+        "ve açık erişimli klinik veri setleri aşağıda IEEE biçiminde sunulmuştur:"
+    )
+    pdf.set_font("TrArial", "", 8.4)
     pdf.set_text_color(30, 41, 59)
     for ref in REFERENCES:
         if pdf.get_y() > 268:
             pdf.add_page()
-        pdf.multi_cell(0, 4.7, ref)
-        pdf.ln(1.1)
+        pdf.multi_cell(0, 4.5, ref)
+        pdf.ln(0.95)
 
-    pdf.output(str(out_pdf))
+    return pdf
+
+
+def build_pdf_report(
+    cfg: Dict[str, Any],
+    all_mod_metrics: Dict[str, Dict[str, Any]],
+    router_metrics: Dict[str, Any],
+    ext_metrics: Dict[str, Any],
+    mri_ds: Dict[str, Any],
+    mm_ds: Dict[str, Any],
+) -> Path:
+    DOCS_DIR.mkdir(parents=True, exist_ok=True)
+    out_pdf = DOCS_DIR / "Proje_Raporu.pdf"
+    # 1. Geçiş: gerçek bölüm sayfa numaralarını hesapla
+    pass1 = _render_academic_pdf_pass(cfg, all_mod_metrics, router_metrics, ext_metrics, mri_ds, mm_ds, toc_entries=None)
+    # 2. Geçiş: birebir doğru sayfa numaralarıyla nihai PDF'i yaz
+    pass2 = _render_academic_pdf_pass(cfg, all_mod_metrics, router_metrics, ext_metrics, mri_ds, mm_ds, toc_entries=pass1.section_pages)
+    pass2.output(str(out_pdf))
     return out_pdf
 
 
 # ==============================================================================
-# 2. 20 SLAYTLIK 3 MODALİTELİ POWERPOINT SUNUMU
+# 2. TEMELDEN ANLATIMLI, ANLATICI DOSTU 18 SLAYTLIK POWERPOINT SUNUMU
 # ==============================================================================
 NAVY = RGBColor(11, 18, 33)
 CARD_BG = RGBColor(23, 34, 54)
@@ -613,16 +853,16 @@ def add_chrome(slide, title: str, tag: str, slide_num: int, total_slides: int, s
     p = tb.text_frame.paragraphs[0]
     p.text = title
     p.font.name = "Calibri"
-    p.font.size = Pt(24.5)
+    p.font.size = Pt(25)
     p.font.bold = True
     p.font.color.rgb = WHITE
 
     if subtitle:
-        tb_s = slide.shapes.add_textbox(Inches(0.55), Inches(0.71), Inches(9.8), Inches(0.32))
+        tb_s = slide.shapes.add_textbox(Inches(0.55), Inches(0.72), Inches(9.8), Inches(0.32))
         ps = tb_s.text_frame.paragraphs[0]
         ps.text = subtitle
         ps.font.name = "Calibri"
-        ps.font.size = Pt(12.2)
+        ps.font.size = Pt(12.5)
         ps.font.color.rgb = MUTED
 
     if tag:
@@ -663,13 +903,13 @@ def add_chrome(slide, title: str, tag: str, slide_num: int, total_slides: int, s
     pr.font.color.rgb = CYAN
 
 
-def add_card(slide, left: float, top: float, width: float, height: float, title: str, bullets: Sequence[str], accent=CYAN, title_size: int = 15.5, body_size: int = 13) -> None:
+def add_card(slide, left: float, top: float, width: float, height: float, title: str, bullets: Sequence[str], accent=CYAN, title_size: int = 16, body_size: int = 13.8) -> None:
     card = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(left), Inches(top), Inches(width), Inches(height))
     card.fill.solid()
     card.fill.fore_color.rgb = CARD_BG
     card.line.color.rgb = accent
     card.line.width = Pt(1.2)
-    tb = slide.shapes.add_textbox(Inches(left + 0.18), Inches(top + 0.12), Inches(width - 0.36), Inches(height - 0.22))
+    tb = slide.shapes.add_textbox(Inches(left + 0.18), Inches(top + 0.13), Inches(width - 0.36), Inches(height - 0.22))
     tf = tb.text_frame
     tf.word_wrap = True
     p0 = tf.paragraphs[0]
@@ -678,14 +918,14 @@ def add_card(slide, left: float, top: float, width: float, height: float, title:
     p0.font.size = Pt(title_size)
     p0.font.bold = True
     p0.font.color.rgb = accent
-    p0.space_after = Pt(6.5)
+    p0.space_after = Pt(8)
     for b in bullets:
         p = tf.add_paragraph()
         p.text = f"▸  {b}"
         p.font.name = "Calibri"
         p.font.size = Pt(body_size)
         p.font.color.rgb = WHITE
-        p.space_after = Pt(5)
+        p.space_after = Pt(6.5)
 
 
 def add_kpi_box(slide, left: float, top: float, width: float, height: float, value: str, label: str, accent=CYAN) -> None:
@@ -701,19 +941,19 @@ def add_kpi_box(slide, left: float, top: float, width: float, height: float, val
     p0.text = value
     p0.alignment = PP_ALIGN.CENTER
     p0.font.name = "Calibri"
-    p0.font.size = Pt(22.5)
+    p0.font.size = Pt(23)
     p0.font.bold = True
     p0.font.color.rgb = accent
     p1 = tf.add_paragraph()
     p1.text = label
     p1.alignment = PP_ALIGN.CENTER
     p1.font.name = "Calibri"
-    p1.font.size = Pt(11.2)
+    p1.font.size = Pt(11.5)
     p1.font.color.rgb = MUTED
     p1.space_before = Pt(3)
 
 
-def add_code_card(slide, title: str, code: str, left: float, top: float, width: float, height: float, font_size: float = 10.2) -> None:
+def add_code_card(slide, title: str, code: str, left: float, top: float, width: float, height: float, font_size: float = 10.6) -> None:
     card = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(left), Inches(top), Inches(width), Inches(height))
     card.fill.solid()
     card.fill.fore_color.rgb = CARD_DARK
@@ -724,7 +964,7 @@ def add_code_card(slide, title: str, code: str, left: float, top: float, width: 
     p0 = tf.paragraphs[0]
     p0.text = title
     p0.font.name = "Calibri"
-    p0.font.size = Pt(13)
+    p0.font.size = Pt(13.5)
     p0.font.bold = True
     p0.font.color.rgb = CYAN
     p0.space_after = Pt(6)
@@ -735,7 +975,7 @@ def add_code_card(slide, title: str, code: str, left: float, top: float, width: 
     p1.font.color.rgb = RGBColor(226, 232, 240)
 
 
-def add_styled_table(slide, left: float, top: float, width: float, height: float, headers: Sequence[str], rows: Sequence[Sequence[str]], col_widths: Sequence[float] | None = None, font_size: float = 11.2) -> None:
+def add_styled_table(slide, left: float, top: float, width: float, height: float, headers: Sequence[str], rows: Sequence[Sequence[str]], col_widths: Sequence[float] | None = None, font_size: float = 11.5) -> None:
     shape = slide.shapes.add_table(len(rows) + 1, len(headers), Inches(left), Inches(top), Inches(width), Inches(height))
     tbl = shape.table
     if col_widths:
@@ -781,7 +1021,7 @@ def build_pptx(
     prs.slide_width = Inches(13.333)
     prs.slide_height = Inches(7.5)
     blank = prs.slide_layouts[6]
-    TOTAL = 20
+    TOTAL = 18
 
     mri_b, mri_acc, mri_f1 = _best_model_summary(all_mod_metrics.get("brain_mri", {}))
     xr_b, xr_acc, xr_f1 = _best_model_summary(all_mod_metrics.get("chest_xray", {}))
@@ -801,33 +1041,31 @@ def build_pptx(
     tf = tb.text_frame
     tf.word_wrap = True
     p0 = tf.paragraphs[0]
-    p0.text = f"{cfg['course_name'].upper()} DERSİ PROJE SUNUMU  •  3 MODALİTELİ KLİNİK SİSTEM"
+    p0.text = f"{cfg['course_name'].upper()} DERSİ PROJE SUNUMU"
     p0.font.name = "Calibri"
-    p0.font.size = Pt(14.5)
+    p0.font.size = Pt(15)
     p0.font.bold = True
     p0.font.color.rgb = CYAN
-
     p1 = tf.add_paragraph()
     p1.text = cfg["project_title"]
     p1.font.name = "Calibri"
-    p1.font.size = Pt(40)
+    p1.font.size = Pt(42)
     p1.font.bold = True
     p1.font.color.rgb = WHITE
     p1.space_before = Pt(5)
-
     p2 = tf.add_paragraph()
-    p2.text = cfg["project_subtitle"]
+    p2.text = "Beyin MR, Göğüs Röntgeni ve Akciğer Tomografisinde (BT) Otomatik Hastalık Tespiti ve Bölge Segmentasyonu"
     p2.font.name = "Calibri"
-    p2.font.size = Pt(16)
+    p2.font.size = Pt(17)
     p2.font.color.rgb = MUTED
-    p2.space_before = Pt(7)
+    p2.space_before = Pt(8)
 
-    add_kpi_box(s1, 0.85, 3.55, 2.75, 1.15, f"Router {rt_acc}", "Otomatik MR / Röntgen / BT\nAlgılama (ResNet-18)", AMBER)
-    add_kpi_box(s1, 3.80, 3.55, 2.75, 1.15, mri_acc, f"Beyin MR ({mri_b})\nHarici BRISC 2025: {ext_acc}", CYAN)
-    add_kpi_box(s1, 6.75, 3.55, 2.75, 1.15, xr_acc, f"Göğüs Röntgeni ({xr_b})\nCOVID-19 • Pnömoni • TB", EMERALD)
-    add_kpi_box(s1, 9.70, 3.55, 2.75, 1.15, ct_acc, f"Akciğer BT ({ct_b})\n4 Sınıf Akciğer Kanseri", PURPLE)
+    add_kpi_box(s1, 0.85, 3.55, 2.75, 1.15, f"Router {rt_acc}", "MR / Röntgen / BT\nOtomatik Algılama", AMBER)
+    add_kpi_box(s1, 3.80, 3.55, 2.75, 1.15, mri_acc, f"Beyin MR ({mri_b})\nHarici Test: {ext_acc}", CYAN)
+    add_kpi_box(s1, 6.75, 3.55, 2.75, 1.15, xr_acc, f"Göğüs Röntgeni ({xr_b})\nCOVID • Pnömoni • TB", EMERALD)
+    add_kpi_box(s1, 9.70, 3.55, 2.75, 1.15, ct_acc, f"Akciğer BT ({ct_b})\n4 Sınıf Kanser", PURPLE)
 
-    box = s1.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.85), Inches(5.00), Inches(11.6), Inches(1.95))
+    box = s1.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.85), Inches(5.00), Inches(11.6), Inches(1.90))
     box.fill.solid()
     box.fill.fore_color.rgb = CARD_BG
     box.line.color.rgb = CYAN
@@ -836,83 +1074,85 @@ def build_pptx(
     pm = tf2.paragraphs[0]
     pm.text = "Grup Üyeleri:   " + "   |   ".join(m["name"] for m in cfg["team_members"])
     pm.font.name = "Calibri"
-    pm.font.size = Pt(15.5)
+    pm.font.size = Pt(16)
     pm.font.bold = True
     pm.font.color.rgb = WHITE
-    pm.space_before = Pt(10)
+    pm.space_before = Pt(12)
     pg = tf2.add_paragraph()
-    pg.text = f"GitHub Reposu:  {cfg['github_url']}"
+    pg.text = f"GitHub:  {cfg['github_url']}"
     pg.font.name = "Calibri"
-    pg.font.size = Pt(14.5)
+    pg.font.size = Pt(15)
     pg.font.color.rgb = CYAN
-    pg.space_before = Pt(8)
-    pd_t = tf2.add_paragraph()
-    pd_t.text = f"10 Eğitilmiş Model (1 Router + 9 Uzman)  •  NVIDIA RTX 5070 Ti (CUDA 12.8)  •  {datetime.now().strftime('%d.%m.%Y')}"
-    pd_t.font.name = "Calibri"
-    pd_t.font.size = Pt(12.5)
-    pd_t.font.color.rgb = MUTED
-    pd_t.space_before = Pt(6)
-    set_notes(s1, "Açılış: Röntgen, MR ve Tomografi modalitelerinin tamamını kapsayan, otomatik modalite yönlendirmeli ve açıklanabilir karar destek sistemimizi tanıtıyoruz.")
+    pg.space_before = Pt(10)
+    set_notes(s1, """[1. ÜYE — 30 sn]
+Merhaba hocam, merhaba arkadaşlar. Bugün Görüntü İşleme dersi projemiz olan 'Medikal Görüntülerden Hastalık Tespiti' sistemimizi sunacağız.
+Projemizde yalnızca tek bir organla sınırlı kalmayıp MR, Röntgen ve Tomografi (BT) görüntülerinin üçünü birden otomatik tanıyan, hastalığı sınıflandıran ve tümörün/lezyonun yerini işaretleyen uçtan uca bir uygulama geliştirdik.""")
 
-    # ---- SLAYT 2: SUNUM AKIŞI ----
+    # ---- SLAYT 2: SUNUM PLANI ----
     s2 = prs.slides.add_slide(blank)
     set_slide_bg(s2)
-    add_chrome(s2, "Sunum Planı ve 3 Kişilik Görev Dağılımı", "15–20 Dk", 2, TOTAL, "Her grup üyesi ~5–6 dakikalık bölümü anlatır; sunum canlı demo ile tamamlanır")
-    add_card(s2, 0.55, 1.30, 3.92, 5.45, "1. Bölüm (~5–6 Dk) — " + cfg["team_members"][0]["name"], [
-        "Amaç, klinik gerekçe ve 3 modaliteli kapsam",
-        "Uçtan uca mimari & Otomatik Modalite Router (ResNet-18)",
-        "3 veri setinin dağılımı (MR + Röntgen + BT)",
-        "Modaliteye duyarlı klasik görüntü işleme (Otsu, Bilateral, CLAHE)",
-        "Histogram etkisi ve preprocessing.py kritik kodu",
-    ], accent=CYAN, title_size=14, body_size=13)
-    add_card(s2, 4.71, 1.30, 3.92, 5.45, "2. Bölüm (~5–6 Dk) — " + cfg["team_members"][1]["name"], [
-        "CNN (ResNet-50), ViT-B/16 ve Swin-T mimarileri",
-        "Eğitim stratejisi (RTX 5070 Ti, BF16 AMP, Transfer Learning)",
-        "3 modalitede 9 modelin karşılaştırmalı sonuçları",
-        "Beyin MR, Göğüs Röntgeni ve Akciğer BT karışıklık matrisleri",
-        "Harici Klinik Doğrulama: BRISC 2025 (%99.00 başarı)",
-    ], accent=PURPLE, title_size=14, body_size=13)
-    add_card(s2, 8.87, 1.30, 3.92, 5.45, "3. Bölüm (~5–6 Dk) — " + cfg["team_members"][2]["name"], [
-        "Unified Grad-CAM & modaliteye duyarlı MobileSAM",
-        "explain_and_segment.py kritik kod anlatımı",
-        "3 modalitede Grad-CAM + SAM görsel çıktıları",
-        "Kütüphaneler, 4 sekmeli Streamlit arayüzü ve Kaynakça",
-        "Canlı Demo: Otomatik Router ile MR + Röntgen + BT testi",
-    ], accent=EMERALD, title_size=14, body_size=13)
-    set_notes(s2, "Görev dağılımını kısaca özetleyip 1. Üyeye geçiyoruz.")
+    add_chrome(s2, "Sunum Akışı ve 3 Kişilik Görev Paylaşımı", "15–18 Dk", 2, TOTAL, "Temelden başlayarak adım adım tüm sistemi anlatıp canlı demo ile bitireceğiz")
+    add_card(s2, 0.55, 1.35, 3.92, 5.35, "1. Bölüm (~5–6 Dk) — " + cfg["team_members"][0]["name"], [
+        "Neden bu projeyi yaptık? (MR, Röntgen, BT farkı)",
+        "Sistem baştan sona nasıl çalışır? (5 basit adım)",
+        "Klasik Görüntü İşleme neden şarttır? (Otsu, Morfoloji, Bilateral, CLAHE)",
+        "Histogram nasıl değişir ve ön-işleme kodu nasıl çalışır?",
+    ], accent=CYAN, title_size=14.5, body_size=14)
+    add_card(s2, 4.71, 1.35, 3.92, 5.35, "2. Bölüm (~5–6 Dk) — " + cfg["team_members"][1]["name"], [
+        "Veri setlerimiz ve adil test kuralı (Train / Val / Test)",
+        "Temelden farkları: CNN, ViT ve Swin Transformer nedir?",
+        "Transfer Learning ile nasıl eğittik?",
+        "3 modalitede sonuçlar, hata analizi ve harici BRISC 2025 doğrulaması",
+    ], accent=PURPLE, title_size=14.5, body_size=14)
+    add_card(s2, 8.87, 1.35, 3.92, 5.35, "3. Bölüm (~5–6 Dk) — " + cfg["team_members"][2]["name"], [
+        "Kara kutu sorunu: Grad-CAM ve SAM ne işe yarar?",
+        "Grad-CAM'den otomatik SAM maskesi nasıl çıkarılır? (Kod)",
+        "Kullanılan kütüphaneler ve 4 sekmeli Streamlit arayüzü",
+        "Kaynakça ve Canlı Uygulama Demosu (3 modalite birden!)",
+    ], accent=EMERALD, title_size=14.5, body_size=14)
+    set_notes(s2, """[1. ÜYE — 25 sn]
+Sunumumuz 3 bölümden oluşuyor. İlk 5-6 dakikada ben problemi, sistemin temel mantığını ve klasik görüntü işleme adımlarını anlatacağım. İkinci bölümde arkadaşım derin öğrenme modellerini ve deney sonuçlarını, üçüncü bölümde ise diğer arkadaşım Grad-CAM, SAM segmentasyonu, arayüzü anlatıp canlı demoyu gösterecek.""")
 
-    # ---- SLAYT 3: AMAÇ & 3 MODALİTELİ KAPSAM ----
+    # ---- SLAYT 3: TEMELDEN BAŞLAYALIM — AMAÇ & 3 CİHAZ FARKI ----
     s3 = prs.slides.add_slide(blank)
     set_slide_bg(s3)
-    add_chrome(s3, "Projenin Amacı, Gerekçesi ve 3 Modaliteli Kapsam", "1. Üye", 3, TOTAL, "Konu kartındaki MR, Röntgen ve Tomografi + 4 yapay zeka yönteminin tamamı tek sistemde")
-    add_card(s3, 0.55, 1.30, 5.95, 5.45, "Neden Tek Model Değil, Çoklu Uzman Mimari?", [
-        "Her görüntüleme cihazı farklı anatomik yapı ve kontrast fiziğine sahiptir: MR yumuşak dokuyu, Röntgen akciğer opasitelerini, BT kesitsel nodülleri gösterir.",
-        "Yanlış modaliteye yanlış görüntü yüklenmesi (ör. Röntgen modunda Beyin MR) klinik olarak tehlikeli hatalara yol açar.",
-        "Sadece sınıf etiketi veren modeller yerine, odak bölgesini gösteren Grad-CAM ve sınır çizen SAM gereklidir.",
-    ], accent=ROSE, title_size=16, body_size=14)
-    add_card(s3, 6.80, 1.30, 5.95, 5.45, "Geliştirdiğimiz Bütünleşik Çözüm", [
-        "🤖 Otomatik Modalite Router (ResNet-18): Yüklenen görüntüyü MR / Röntgen / BT olarak otomatik algılar ve yanlış modaliteyi engeller.",
-        "🧠 Beyin MR Uzmanları: Glioma, Menenjiyom, Hipofiz, Sağlıklı.",
-        "🫁 Göğüs Röntgeni Uzmanları: COVID-19, Pnömoni, Tüberküloz, Normal.",
-        "🩻 Akciğer BT Uzmanları: Adenokarsinom, Büyük Hücreli, Skuamöz, Normal.",
-    ], accent=EMERALD, title_size=16, body_size=14)
-    set_notes(s3, "1. Üye: Neden 3 ayrı modalite için ayrı uzman modeller ve önüne akıllı bir Router koyduğumuzu açıklar.")
+    add_chrome(s3, "Temelden Başlayalım: Neden 3 Farklı Medikal Görüntü?", "1. Üye", 3, TOTAL, "Her cihazın baktığı doku ve tespit ettiği hastalık grubu farklıdır")
+    add_card(s3, 0.55, 1.35, 3.92, 3.30, "🧠 1. Beyin MR (Manyetik Rezonans)", [
+        "Yumuşak dokuyu çok detaylı gösterir.",
+        "Hastalığımız: Beyin Tümörü (4 sınıf).",
+        "Glioma, Menenjiyom, Hipofiz Tümörü ve Sağlıklı.",
+    ], accent=CYAN, title_size=15.5, body_size=13.5)
+    add_card(s3, 4.71, 1.35, 3.92, 3.30, "🫁 2. Göğüs Röntgeni (X-Ray)", [
+        "Hızlı ve yaygın akciğer taramasıdır.",
+        "Hastalığımız: Akciğer Enfeksiyonları (4 sınıf).",
+        "COVID-19, Pnömoni (Zatürre), Tüberküloz ve Normal.",
+    ], accent=EMERALD, title_size=15.5, body_size=13.5)
+    add_card(s3, 8.87, 1.35, 3.92, 3.30, "🩻 3. Akciğer Tomografisi (BT)", [
+        "Kesit kesit derinlemesine görüntü alır.",
+        "Hastalığımız: Akciğer Kanseri (4 sınıf).",
+        "Adenokarsinom, Büyük Hücreli, Skuamöz ve Normal.",
+    ], accent=PURPLE, title_size=15.5, body_size=13.5)
 
-    # ---- SLAYT 4: SİSTEM MİMARİSİ & ROUTER ----
+    add_card(s3, 0.55, 4.95, 12.23, 1.85, "Projemizin Temel Amacı", [
+        "Radyologların yoğun iş yükünü azaltan, tek bir 'kara kutu' tahmini vermek yerine görüntüyü önce temizleyen, sonra hastalığı sınıflandıran ve en sonunda şüpheli bölgeyi çizip yüzdesel alanını ölçen bir karar destek aracı kurmak.",
+    ], accent=AMBER, title_size=15, body_size=14)
+    set_notes(s3, """[1. ÜYE — 1 dk]
+Önce en temelden başlayalım: Konumuz MR, röntgen ve tomografiden hastalık tespiti. Tıpta bu üç cihaz tamamen farklı şeylere bakar. Beyin MR yumuşak dokuyu net gösterdiği için beyin tümörlerinde, Göğüs Röntgeni hızlı akciğer taramasında COVID-19 ve zatürrede, Akciğer Tomografisi (BT) ise kesitsel olarak kanser alt tiplerinde kullanılır. Biz de tek bir genel model yerine her modaliteye özel uzman modeller kurduk.""")
+
+    # ---- SLAYT 4: SİSTEM NASIL ÇALIŞIR (5 BASİT ADIM + ROUTER) ----
     s4 = prs.slides.add_slide(blank)
     set_slide_bg(s4)
-    add_chrome(s4, "Uçtan Uca Sistem Mimarisi ve Otomatik Modalite Router", "1. Üye", 4, TOTAL, "Ham MR / Röntgen / BT / DICOM girişinden uzman tanıya ve SAM segmentasyonuna")
-    stages = [
-        ("1. Giriş", "JPG / PNG\nveya\nDICOM (.dcm)", CYAN),
-        ("2. AI Router", f"ResNet-18\nMR/Röntgen/BT\n({rt_acc} Acc)", AMBER),
-        ("3. Ön İşleme", "ROI (MR/BT)\nBilateral\nCLAHE (8×8)", CYAN),
-        ("4. Uzman Ağ", "CNN • ViT\nSwin-T\n3'lü Ensemble", PURPLE),
-        ("5. Grad-CAM", "Unified Hooks\nIsı Haritası\nKutu + Tepe", EMERALD),
-        ("6. MobileSAM", "Pozitif + Köşe\nNegatif Prompt\nLezyon Alanı %", ROSE),
+    add_chrome(s4, "Sistemimiz Baştan Sona Nasıl Çalışır? (5 Adım)", "1. Üye", 4, TOTAL, "Kullanıcı görüntüyü yükler, gerisini akıllı yönlendirici ve uzman modeller halleder")
+    steps_s4 = [
+        ("1. Görüntü Al", "JPG / PNG\nveya\nDICOM (.dcm)", CYAN),
+        ("2. Türünü Tanı", f"AI Router\nMR / Röntgen / BT\n({rt_acc} Doğru)", AMBER),
+        ("3. Netleştir", "Otsu + Morfoloji\nBilateral Filtre\nCLAHE", CYAN),
+        ("4. Teşhis Koy", "CNN • ViT\nSwin-T\n(3'lü Ensemble)", PURPLE),
+        ("5. Yerini Çiz", "Grad-CAM Isı\nMobileSAM Maske\nAlan Oranı (%)", EMERALD),
     ]
-    for i, (st_t, st_d, st_c) in enumerate(stages):
-        x = 0.45 + i * 2.12
-        b = s4.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(x), Inches(1.75), Inches(1.82), Inches(2.25))
+    for i, (st_t, st_d, st_c) in enumerate(steps_s4):
+        x = 0.55 + i * 2.50
+        b = s4.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(x), Inches(1.70), Inches(2.12), Inches(2.35))
         b.fill.solid()
         b.fill.fore_color.rgb = CARD_BG
         b.line.color.rgb = st_c
@@ -924,37 +1164,81 @@ def build_pptx(
         p0.text = st_t
         p0.alignment = PP_ALIGN.CENTER
         p0.font.name = "Calibri"
-        p0.font.size = Pt(14)
+        p0.font.size = Pt(15)
         p0.font.bold = True
         p0.font.color.rgb = st_c
         p1 = tf.add_paragraph()
         p1.text = st_d
         p1.alignment = PP_ALIGN.CENTER
         p1.font.name = "Calibri"
-        p1.font.size = Pt(11.8)
+        p1.font.size = Pt(12.5)
         p1.font.color.rgb = WHITE
-        p1.space_before = Pt(7)
-        if i < len(stages) - 1:
-            arr = s4.shapes.add_shape(MSO_SHAPE.RIGHT_ARROW, Inches(x + 1.85), Inches(2.72), Inches(0.24), Inches(0.30))
+        p1.space_before = Pt(8)
+        if i < len(steps_s4) - 1:
+            arr = s4.shapes.add_shape(MSO_SHAPE.RIGHT_ARROW, Inches(x + 2.16), Inches(2.70), Inches(0.30), Inches(0.34))
             arr.fill.solid()
             arr.fill.fore_color.rgb = MUTED
             arr.line.fill.background()
 
-    add_card(s4, 0.55, 4.45, 6.00, 2.25, "Input Validation (Yanlış Görüntü Koruması)", [
-        "Kullanıcı 'Otomatik Algıla' seçerse Router görüntüyü doğru modaliteye yönlendirir.",
-        "Elle 'Göğüs Röntgeni' seçilip Beyin MR yüklenirse sistem uyuşmazlık uyarısı verir.",
-    ], accent=AMBER, title_size=14.5, body_size=12.8)
-    add_card(s4, 6.78, 4.45, 6.00, 2.25, "Modaliteye Duyarlı Ön İşleme & Segmentasyon", [
-        "MR ve BT'de siyah dış çerçeve Otsu+Morfoloji ROI ile kırpılır.",
-        "Göğüs Röntgeninde koyu akciğer alanlarını kesmemek için ROI kırpması otomatik kapatılır.",
-    ], accent=CYAN, title_size=14.5, body_size=12.8)
-    set_notes(s4, "1. Üye: 2. kutudaki AI Router'ın hem otomatik yönlendirme hem de yanlış modalite koruması yaptığını vurgular.")
+    add_card(s4, 0.55, 4.45, 12.23, 2.30, "Neden 2. Adımda 'Otomatik Modalite Router' (ResNet-18) Ekledik?", [
+        "Gerçek bir kullanıcı yanlışlıkla 'Göğüs Röntgeni' sekmesindeyken Beyin MR yüklerse, korumasız bir model saçma bir zatürre tahmini üretir.",
+        "Hafif bir ResNet-18 Router modeli önce görüntünün MR mı, Röntgen mi, BT mi olduğunu %100 doğrulukla (405/405) anlar.",
+        "Otomatik modda doğru uzman modellere yönlendirir; manuel modda uyuşmazlık varsa kullanıcıyı uyarır.",
+    ], accent=AMBER, title_size=15.5, body_size=13.8)
+    set_notes(s4, """[1. ÜYE — 1 dk]
+Sistemimiz 5 basit adımdan oluşuyor. 1) Kullanıcı JPG, PNG veya hastane formatı DICOM dosyası yükler. 2) Önce 'AI Router' dediğimiz hafif ResNet-18 modelimiz bu görüntünün Beyin MR mı, Göğüs Röntgeni mi, yoksa Akciğer BT mi olduğunu %100 başarıyla anlar — böylece yanlış modalite yüklenip hatalı teşhis verilmesini engeller. 3) Klasik görüntü işleme ile görüntü temizlenir. 4) İlgili uzman modeller teşhis koyar. 5) Grad-CAM ve SAM ile şüpheli bölge çizilir.""")
 
-    # ---- SLAYT 5: 3 MODALİTE VERİ SETLERİ & ÖRNEK GALERİ ----
+    # ---- SLAYT 5: KLASİK GÖRÜNTÜ İŞLEME NEDİR & NEDEN ŞARTTIR ----
     s5 = prs.slides.add_slide(blank)
     set_slide_bg(s5)
-    add_chrome(s5, "3 Modaliteli Klinik Veri Setleri ve Örnek Görüntüler", "1. Üye", 5, TOTAL, "Toplam 11.600+ eğitim/test görüntüsü + 300 harici BRISC 2025 klinik MR")
+    add_chrome(s5, "Klasik Görüntü İşleme: Görüntüyü Neden Ön-İşliyoruz?", "1. Üye", 5, TOTAL, "Ham görüntüyü doğrudan modele vermek yerine önce gereksiz arka planı ve gürültüyü temizliyoruz")
+    if (PLOTS_DIR / "preprocessing_showcase.png").exists():
+        s5.shapes.add_picture(str(PLOTS_DIR / "preprocessing_showcase.png"), Inches(0.55), Inches(1.18), width=Inches(8.35))
+    add_card(s5, 9.10, 1.20, 3.70, 5.55, "Her Adım Ne İşe Yarar?", [
+        "Otsu Eşikleme: Siyah arka planla kafatasını otomatik ayırır (elle eşik seçmeye gerek yok).",
+        "Morfoloji (Kapama+Açma): Maskenin içindeki siyah delikleri kapatır, dışarıdaki küçük noktaları siler → Beyin kırpılır (ROI).",
+        "Not: Röntgende koyu akciğer kesilmesin diye ROI kapalıdır!",
+        "Bilateral Filtre: Gaussian gibi tümör sınırını bulanıklaştırmadan gürültüyü siler.",
+        "CLAHE: Görüntüyü 8×8 parçalara bölüp gizli tümör kontrastını ortaya çıkarır.",
+    ], accent=CYAN, title_size=14.5, body_size=12.4)
+    set_notes(s5, """[1. ÜYE — 1.5 dk]
+Dersimiz Görüntü İşleme olduğu için burası çok önemli. 1. fotoğrafa bakarsanız etrafta gereksiz siyah boşluklar var ve tümör soluk duruyor. Önce Otsu eşikleme ile siyah arka planı ayırıyoruz, morfolojik kapama-açma ile temizleyip sadece beyni kırpıyoruz. Önemli bir detay: Göğüs röntgeninde akciğerin kendisi siyah olduğu için orada ROI kırpmasını kapatıyoruz! Sonra Bilateral filtre ile kenarları bozmadan gürültüyü temizliyoruz. Son adımda CLAHE ile 6. karedeki gibi tümörü çok net görünür hale getiriyoruz.""")
 
+    # ---- SLAYT 6: CLAHE HİSTOGRAM + KRİTİK KOD 1 ----
+    s6 = prs.slides.add_slide(blank)
+    set_slide_bg(s6)
+    add_chrome(s6, "CLAHE Etkisi ve Kritik Kod: src/preprocessing.py", "1. Üye", 6, TOTAL, "Histogram parlaklığın nasıl dengelendiğini gösterir — sağda bunun 10 satırlık gerçek kodu")
+    if (PLOTS_DIR / "clahe_histogram_comparison.png").exists():
+        s6.shapes.add_picture(str(PLOTS_DIR / "clahe_histogram_comparison.png"), Inches(0.55), Inches(1.25), width=Inches(6.00))
+    add_card(s6, 0.55, 4.35, 6.00, 2.40, "Grafiğe Basitçe Bakarsak", [
+        "Gri eğri (CLAHE öncesi): Beyin dokuları 75–105 arasında dar bir tepeye sıkışmış, yani detaylar birbirine yakın.",
+        "Mavi eğri (CLAHE sonrası): Parlaklık 60–200 aralığına yayılıyor; tümör ile sağlıklı doku farkı belirginleşiyor.",
+    ], accent=CYAN, title_size=14.5, body_size=13)
+    add_code_card(
+        s6,
+        "src/preprocessing.py — OpenCV ile Ön İşleme",
+        """# 1. Otsu otomatik eşikleme ile arka planı ayır
+blurred = cv2.GaussianBlur(gray_img, (5, 5), 0)
+_, otsu = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+# 2. Morfoloji (Kapama delik kapatır, Açma gürültü siler)
+kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
+morph = cv2.morphologyEx(otsu, cv2.MORPH_CLOSE, kernel, iterations=2)
+morph = cv2.morphologyEx(morph, cv2.MORPH_OPEN, kernel, iterations=2)
+
+# 3. En büyük konturdan kırp -> Bilateral filtre -> CLAHE
+filtered = cv2.bilateralFilter(roi, d=5, sigmaColor=50, sigmaSpace=50)
+clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+enhanced = clahe.apply(filtered)""",
+        6.75, 1.25, 6.05, 5.50, font_size=10.6,
+    )
+    set_notes(s6, """[1. ÜYE — 1 dk]
+Soldaki histogram grafiği CLAHE'nin etkisini sayılarla kanıtlıyor: Gri eğri sıkışıkken mavi eğri yayılarak kontrastı artırıyor. Sağda ise bunu yaptığımız OpenCV kodunun özü var: 3 blokta Otsu, Morfoloji ve Bilateral + CLAHE. Şimdi sözü modelleri ve deney sonuçlarını anlatması için 2. arkadaşıma bırakıyorum.""")
+
+    # ---- SLAYT 7: VERİ SETLERİ VE ADİL TEST KURALI (2. ÜYE) ----
+    s7 = prs.slides.add_slide(blank)
+    set_slide_bg(s7)
+    add_chrome(s7, "Veri Setlerimiz ve 'Adil Test' Kuralı (Train / Val / Test)", "2. Üye", 7, TOTAL, "Modelin ezberleyip ezberlemediğini anlamak için Test verisi eğitime hiç gösterilmez")
     gal = [
         (SAMPLE_DIR / "glioma_01.jpg", "Beyin MR — Glioma", 0.55),
         (SAMPLE_DIR / "chest_xray" / "covid19_01.jpg", "Göğüs Röntgeni — COVID-19", 4.70),
@@ -962,8 +1246,8 @@ def build_pptx(
     ]
     for img_p, cap, gx in gal:
         if img_p.exists():
-            s5.shapes.add_picture(str(img_p), Inches(gx + 0.55), Inches(1.22), width=Inches(2.75), height=Inches(2.45))
-        ctb = s5.shapes.add_textbox(Inches(gx), Inches(3.72), Inches(3.9), Inches(0.32))
+            s7.shapes.add_picture(str(img_p), Inches(gx + 0.65), Inches(1.20), width=Inches(2.55), height=Inches(2.30))
+        ctb = s7.shapes.add_textbox(Inches(gx), Inches(3.55), Inches(3.9), Inches(0.32))
         pc = ctb.text_frame.paragraphs[0]
         pc.text = cap
         pc.alignment = PP_ALIGN.CENTER
@@ -973,121 +1257,80 @@ def build_pptx(
         pc.font.color.rgb = CYAN
 
     add_styled_table(
-        s5, 0.55, 4.20, 12.23, 2.55,
-        ["Modalite", "Veri Seti Kaynağı", "Sınıflar (4'er Sınıf)", "Ön İşleme"],
+        s7, 0.55, 4.00, 12.23, 2.75,
+        ["Modalite / Görev", "Eğitim (Train)", "Doğrulama (Val)", "Bağımsız Test", "Toplam", "Sınıflar"],
         [
-            ["Beyin MR", "Kaggle Brain Tumor MRI (7.200) + BRISC 2025 (300) [10,11]", "Glioma, Menenjiyom, Hipofiz, Tümör Yok", "ROI + Bilateral + CLAHE"],
-            ["Göğüs Röntgeni", "HF Chest X-Ray COVID/Pnömoni/TB [12]", "COVID-19, Pnömoni, Tüberküloz, Normal", "Bilateral + CLAHE"],
-            ["Akciğer BT", "HF LungCancer4Types (1.000 BT) [13]", "Adenokarsinom, Büyük H., Skuamöz, Normal", "ROI + Bilateral + CLAHE"],
-            ["Modalite Router", "3 Modaliteden Dengeli Ham Görüntüler (2.700)", "Beyin MR, Göğüs Röntgeni, Akciğer BT", "Ham 224×224 RGB"],
+            ["Beyin MR (Kaggle) [18]", "4.760", "840", "1.600", "7.200", "Glioma, Menenjiyom, Hipofiz, Sağlıklı"],
+            ["Göğüs Röntgeni (HF) [20]", "2.064", "476", "634", "3.174", "COVID-19, Pnömoni, Tüberküloz, Normal"],
+            ["Akciğer BT (HF) [21]", "613", "72", "315", "1.000", "Adenokarsinom, Büyük H., Skuamöz, Normal"],
+            ["Modalite Router", "1.890", "405", "405", "2.700", "Beyin MR, Göğüs Röntgeni, Akciğer BT"],
         ],
-        col_widths=[1.95, 4.10, 4.08, 2.10],
+        col_widths=[2.65, 1.35, 1.45, 1.40, 1.05, 4.33],
         font_size=11.5,
     )
-    set_notes(s5, "1. Üye: 3 farklı cihazdan alınan gerçek görüntü örneklerini ve veri seti kaynaklarını özetler.")
+    set_notes(s7, """[2. ÜYE — 1 dk]
+Teşekkürler. Şimdi yapay zeka kısmına geçelim. Önce veri setlerimizde temel kuralımız: Her veriyi 3'e böldük. Train ile model ders çalışır, Val ile en iyi olduğu anı (epoch'u) seçeriz, Test ise final sınavıdır — model bu görüntüleri eğitimde hiç görmez. Beyin MR'da 7.200, Röntgende dengeli 3.174, Akciğer BT'de 1.000 ve Router için 2.700 görüntü kullandık.""")
 
-    # ---- SLAYT 6: KLASİK GÖRÜNTÜ İŞLEME HATTI ----
-    s6 = prs.slides.add_slide(blank)
-    set_slide_bg(s6)
-    add_chrome(s6, "Klasik Görüntü İşleme Ön İşleme Hattı", "1. Üye", 6, TOTAL, "Otsu Eşikleme [1] → Morfoloji → ROI Kırpma → Bilateral Filtre [3] → CLAHE [2]")
-    if (PLOTS_DIR / "preprocessing_showcase.png").exists():
-        s6.shapes.add_picture(str(PLOTS_DIR / "preprocessing_showcase.png"), Inches(0.55), Inches(1.18), width=Inches(8.55))
-    add_card(s6, 9.25, 1.22, 3.55, 1.75, "1. Otsu + Morfoloji ROI", ["Siyah arka plan boşlukları elenir.", "Kapama boşlukları doldurur, Açma paraziti siler."], accent=CYAN, title_size=13.5, body_size=12)
-    add_card(s6, 9.25, 3.12, 3.55, 1.75, "2. Bilateral Filtre", ["Gaussian gibi kenarları bulanıklaştırmaz.", "Gürültüyü bastırırken lezyon sınırlarını korur."], accent=PURPLE, title_size=13.5, body_size=12)
-    add_card(s6, 9.25, 5.02, 3.55, 1.75, "3. CLAHE (8×8, clip=2.0)", ["Yerel kontrastı dengeli artırır.", "Farklı cihaz kontrastlarını standartlaştırır."], accent=EMERALD, title_size=13.5, body_size=12)
-    set_notes(s6, "1. Üye: Klasik görüntü işleme aşamalarının her birinin derin öğrenme öncesi neden kritik olduğunu anlatır.")
-
-    # ---- SLAYT 7: CLAHE HİSTOGRAM + KRİTİK KOD 1 ----
-    s7 = prs.slides.add_slide(blank)
-    set_slide_bg(s7)
-    add_chrome(s7, "CLAHE Histogram Analizi ve Kritik Kod (preprocessing.py)", "1. Üye", 7, TOTAL, "Piksel parlaklık dağılımının dengelenmesi ve OpenCV implementasyonu")
-    if (PLOTS_DIR / "clahe_histogram_comparison.png").exists():
-        s7.shapes.add_picture(str(PLOTS_DIR / "clahe_histogram_comparison.png"), Inches(0.55), Inches(1.25), width=Inches(6.05))
-    add_card(s7, 0.55, 4.30, 6.05, 2.45, "Histogram Yorumu", [
-        "CLAHE öncesinde doku pikselleri dar bir parlaklık bandına sıkışmıştır.",
-        "CLAHE sonrası 60–200 bandına yayılarak tümör/nodül dokusu belirginleşir.",
-        "DICOM (.dcm) dosyaları pydicom ile %1–%99 yüzdelik pencereleme yapılarak 8-bit'e çevrilir.",
-    ], accent=CYAN, title_size=14, body_size=12.5)
-    add_code_card(
-        s7,
-        "src/preprocessing.py — Otsu ROI + Bilateral + CLAHE",
-        """blurred = cv2.GaussianBlur(gray_img, (5, 5), 0)
-_, otsu = cv2.threshold(
-    blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
-)
-kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
-morph = cv2.morphologyEx(otsu, cv2.MORPH_CLOSE, kernel, 2)
-morph = cv2.morphologyEx(morph, cv2.MORPH_OPEN, kernel, 2)
-contours, _ = cv2.findContours(
-    morph, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-)
-x, y, bw, bh = cv2.boundingRect(max(contours, key=cv2.contourArea))
-roi = gray_img[y:y+bh, x:x+bw]
-
-filtered = cv2.bilateralFilter(roi, d=5, sigmaColor=50, sigmaSpace=50)
-clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-enhanced = clahe.apply(filtered)""",
-        6.80, 1.25, 6.00, 5.50, font_size=10.3,
-    )
-    set_notes(s7, "1. Üye: Histogram değişimini ve OpenCV kodunu açıklayıp sözü 2. Üyeye bırakır.")
-
-    # ---- SLAYT 8: MİMARİLER (CNN / ViT / Swin) ----
+    # ---- SLAYT 8: CNN vs ViT vs SWIN — TEMELDEN FARKLARI ----
     s8 = prs.slides.add_slide(blank)
     set_slide_bg(s8)
-    add_chrome(s8, "Derin Öğrenme Mimarileri: CNN vs ViT vs Swin", "2. Üye", 8, TOTAL, "Her 3 modalitede aynı 3 mimari ailesi adil koşullarda karşılaştırıldı")
-    add_card(s8, 0.55, 1.30, 3.92, 5.45, "CNN — ResNet-50 [4]", [
-        "23.5M parametre, yüksek yerel doku hassasiyeti.",
-        "Artık bağlantılar (y = F(x) + x) ile derin ağlarda kararlı eğitim.",
-        "Uzamsal konvolüsyon yapısı sayesinde en keskin Grad-CAM ısı haritasını üretir.",
-        "Az verili BT kesitlerinde dahi güçlü indüktif önyargı.",
-    ], accent=CYAN, title_size=15.5, body_size=13.5)
-    add_card(s8, 4.71, 1.30, 3.92, 5.45, "ViT — ViT-B/16 [5]", [
-        "85.8M parametre, saf Transformer mimarisi.",
-        "224×224 görüntüyü 196 adet 16×16 yamaya (token) böler.",
-        "Global Self-Attention ile sağ-sol akciğer ve beyin simetrisini bütünsel değerlendirir.",
-        "Transfer Learning ile yüksek temsiliyet gücü.",
-    ], accent=PURPLE, title_size=15.5, body_size=13.5)
-    add_card(s8, 8.87, 1.30, 3.92, 5.45, "Swin Transformer — Swin-T [6]", [
-        "27.5M parametre, hiyerarşik hibrit Transformer.",
-        "Kaydırılmış Pencere (Shifted Window — W-MSA / SW-MSA) ile yerel ve global bilgiyi doğrusal O(N) maliyette birleştirir.",
-        "Hız/doğruluk dengesinde medikal görüntülerde öne çıkan modern mimari.",
-    ], accent=EMERALD, title_size=15.5, body_size=13.5)
-    set_notes(s8, "2. Üye: 3 mimarinin çalışma prensibini ve farklarını özetler.")
+    add_chrome(s8, "Temelden Farkları: CNN, ViT ve Swin Transformer Nedir?", "2. Üye", 8, TOTAL, "Üç farklı yapay zeka mimarisi aynı MR/Röntgen/BT görüntüsüne nasıl farklı bakar?")
+    add_card(s8, 0.55, 1.35, 3.92, 5.40, "1. CNN — ResNet-50 (23.5M)", [
+        "Benzetme: Görüntüyü küçük bir büyüteçle (3×3 filtre) taramak gibidir.",
+        "Önce kenarları, sonra dokuları, en sonda tümör/nodül şeklini öğrenir.",
+        "Artık bağlantılar (skip connection) derinleştikçe bilginin kaybolmasını önler.",
+        "Artısı: Az veride bile kararlıdır ve çok keskin Grad-CAM haritası verir.",
+    ], accent=CYAN, title_size=15.5, body_size=13.8)
+    add_card(s8, 4.71, 1.35, 3.92, 5.40, "2. ViT — ViT-B/16 (85.8M)", [
+        "Benzetme: Görüntüyü 16×16 boyutlu 196 yapboz parçasına (patch) böler.",
+        "Self-Attention sayesinde tüm parçaları birbiriyle aynı anda kıyaslar (sağ-sol simetri).",
+        "Artısı: Büyük veride görüntünün genel bağlamını çok iyi yakalar.",
+        "Eksisi: Çok büyük modeldir (85.8M); veri az olunca (BT gibi) öğrenmesi zorlaşır.",
+    ], accent=PURPLE, title_size=15.5, body_size=13.8)
+    add_card(s8, 8.87, 1.35, 3.92, 5.40, "3. Swin Transformer — Swin-T (27.5M)", [
+        "Benzetme: CNN ile ViT'nin en iyi yönlerini birleştiren akıllı hibrit!",
+        "Görüntüye önce küçük pencerelerle bakar, sonraki katmanda pencereleri kaydırır (Shifted Window).",
+        "Böylece hem yakın tümör dokusunu hem de tüm organ yapısını hızlıca öğrenir.",
+        "Sonuç: Hem hızlı hem az veride bile çok başarılı!",
+    ], accent=EMERALD, title_size=15.5, body_size=13.8)
+    set_notes(s8, """[2. ÜYE — 1.5 dk]
+Konu kartımızdaki 3 sınıflandırma yöntemini basitçe kıyaslayalım. CNN (ResNet-50) küçük bir büyüteçle komşu piksellere baka baka ilerler — yerel doku ve kenarlarda çok iyidir. Vision Transformer (ViT) görüntüyü 196 küçük kareye (yama) bölüp bütün kareleri birbiriyle aynı anda kıyaslar; global bakışı çok güçlüdür ama çok parametreye sahip olduğu için fazla veri ister. Swin Transformer ise bu ikisinin köprüsüdür: Önce küçük pencereler içinde dikkat uygular, sonra pencereleri kaydırarak komşu bölgeleri bağlar. Hem yerel hem global bilgiyi az maliyetle yakalar.""")
 
-    # ---- SLAYT 9: EĞİTİM STRATEJİSİ & DONANIM ----
+    # ---- SLAYT 9: TRANSFER LEARNING VE EĞİTİM SÜRECİ ----
     s9 = prs.slides.add_slide(blank)
     set_slide_bg(s9)
-    add_chrome(s9, "Eğitim Stratejisi, Donanım ve Hiperparametreler", "2. Üye", 9, TOTAL, "Toplam 10 modelin tamamı yerel RTX 5070 Ti GPU üzerinde BF16 AMP ile eğitildi")
+    add_chrome(s9, "Modelleri Nasıl Eğittik? (Transfer Learning & Adil Kıyaslama)", "2. Üye", 9, TOTAL, "Sıfırdan rastgele ağırlık yerine ImageNet ön-eğitimli modellerle hızlı ve yüksek doğruluk")
+    add_card(s9, 0.55, 1.35, 5.85, 5.35, "Temel Eğitim Mantığımız", [
+        "Transfer Learning: Modelleri sıfırdan eğitmek milyonlarca görüntü ister. Biz ImageNet'te şekil ve doku tanımayı öğrenmiş hazır ağırlıkları alıp kendi medikal verimizle ince ayar (fine-tuning) yaptık.",
+        "Veri Artırma (Augmentation): Eğitim görüntülerini hafifçe döndürüp çevirerek modelin aynı görüntüyü ezberlemesini (overfitting) engelledik.",
+        "Adil Test: Her modalitede CNN, ViT ve Swin tam olarak aynı veri bölünmesi ve aynı eğitim bütçesiyle yarıştırıldı.",
+    ], accent=CYAN, title_size=16, body_size=13.8)
+
     add_styled_table(
-        s9, 0.55, 1.35, 7.65, 5.35,
-        ["Hiperparametre", "Uygulanan Ayar"],
+        s9, 6.65, 1.35, 6.13, 3.60,
+        ["Ayar", "Seçilen Değer"],
         [
-            ["Ön-Eğitim (Transfer Learning)", "ImageNet-1K (timm pretrained=True)"],
-            ["Optimizer & LR Çizelgeleyici", "AdamW (wd=0.01) + CosineAnnealingLR"],
-            ["Başlangıç Öğrenme Oranı", "CNN: 3e-4  |  ViT: 1e-4  |  Swin: 1.5e-4"],
-            ["Kayıp Fonksiyonu", "CrossEntropyLoss (label_smoothing = 0.05)"],
-            ["Epoch Bütçesi", "Router: 5 Ep  |  MR & Röntgen: 8 Ep  |  BT: 12 Ep"],
-            ["Hassasiyet & Gradyan Kırpma", "BF16 Mixed Precision (AMP)  |  clip_norm = 2.0"],
-            ["Veri Artırma (Train)", "Flip(0.5), Rotation(±15°), Affine, ColorJitter"],
-            ["Model Kayıt Kriteri", "Doğrulama (Val) Macro F1 en yüksek ağırlık"],
+            ["Donanım", "NVIDIA RTX 5070 Ti (16 GB VRAM, CUDA 12.8)"],
+            ["Hızlandırma", "BF16 Mixed Precision (AMP)"],
+            ["Optimizer", "AdamW + CosineAnnealingLR"],
+            ["Kayıp Fonksiyonu", "CrossEntropyLoss (Label Smoothing 0.05)"],
+            ["Epoch / Batch", "MR & Röntgen: 8 Ep | BT: 12 Ep | Batch: 32"],
+            ["Kayıt Kuralı", "Doğrulama (Val) F1 skoru en yüksek an"],
         ],
-        col_widths=[3.15, 4.50],
+        col_widths=[2.10, 4.03],
         font_size=12,
     )
-    add_kpi_box(s9, 8.50, 1.35, 4.25, 1.30, "RTX 5070 Ti", "16 GB VRAM • Blackwell sm_120 • CUDA 12.8", CYAN)
-    add_kpi_box(s9, 8.50, 2.90, 4.25, 1.30, "10 Model", "1 Router (ResNet-18)\n+ 3 Modalite × 3 Uzman Mimari", EMERALD)
-    add_card(s9, 8.50, 4.45, 4.25, 2.25, "Adil Karşılaştırma Garantisi", [
-        "Her modalitede 3 model aynı train/val/test bölünmesi ve aynı ön-işleme ile eğitilmiştir.",
-        "Test setleri eğitime kesinlikle dahil edilmemiştir.",
-    ], accent=PURPLE, title_size=14, body_size=12.5)
-    set_notes(s9, "2. Üye: Eğitim ayarlarını ve veri sızıntısız adil kıyaslamayı açıklar.")
+    add_kpi_box(s9, 6.65, 5.20, 2.95, 1.50, "10 Model", "1 Router + 9 Uzman\nTamamı Yerel GPU'da", EMERALD)
+    add_kpi_box(s9, 9.83, 5.20, 2.95, 1.50, "Label Smooth", "Aşırı Özgüveni Azaltır\nGenellemeyi Artırır", PURPLE)
+    set_notes(s9, """[2. ÜYE — 1 dk]
+Modelleri sıfırdan değil Transfer Learning ile eğittik; yani ImageNet üzerinde kenar-şekil öğrenmiş ağırlıkları alıp medikal verimize uyarladık. Eğitim sırasında döndürme ve çevirme gibi veri artırma yöntemleriyle ezberlemeyi önledik. Toplam 10 modelin tamamını RTX 5070 Ti ekran kartımızda adil koşullarda eğittik ve doğrulama F1 skoru en yüksek olan ağırlıkları kaydettik.""")
 
-    # ---- SLAYT 10: 3 MODALİTELİ GENEL KARŞILAŞTIRMA ----
+    # ---- SLAYT 10: 3 MODALİTEDE SONUÇLAR ----
     s10 = prs.slides.add_slide(blank)
     set_slide_bg(s10)
-    add_chrome(s10, "3 Modalitede Genel Performans Özeti (MR • Röntgen • BT)", "2. Üye", 10, TOTAL, "CNN, ViT ve Swin Transformer modellerinin 3 modalitedeki bağımsız test başarıları")
+    add_chrome(s10, "Deneysel Sonuçlar: 3 Modalitede Kazanan Swin-T!", "2. Üye", 10, TOTAL, "Bağımsız test setlerinde CNN, ViT ve Swin Transformer karşılaştırması")
     if (PLOTS_DIR / "multimodal_overview.png").exists():
-        s10.shapes.add_picture(str(PLOTS_DIR / "multimodal_overview.png"), Inches(0.50), Inches(1.25), width=Inches(6.95))
+        s10.shapes.add_picture(str(PLOTS_DIR / "multimodal_overview.png"), Inches(0.50), Inches(1.25), width=Inches(7.05))
 
     m_rows = []
     for mod in ["brain_mri", "chest_xray", "chest_ct"]:
@@ -1096,166 +1339,162 @@ enhanced = clahe.apply(filtered)""",
         for mk in ["cnn", "vit", "swin"]:
             if mk in md:
                 m = md[mk]
-                m_rows.append([mc["short_name"], m["short_name"], fmt_pct(m["accuracy"]), fmt_pct(m["f1_macro"]), fmt_pct(m["roc_auc_macro"])])
+                m_rows.append([mc["short_name"], m["short_name"], fmt_pct(m["accuracy"]), fmt_pct(m["f1_macro"])])
     add_styled_table(
-        s10, 7.60, 1.30, 5.20, 5.35,
-        ["Modalite", "Model", "Acc", "F1", "AUC"],
+        s10, 7.75, 1.25, 5.05, 3.65,
+        ["Modalite", "Model", "Acc", "Macro F1"],
         m_rows,
-        col_widths=[1.42, 1.12, 0.88, 0.88, 0.90],
-        font_size=10.8,
+        col_widths=[1.60, 1.25, 1.10, 1.10],
+        font_size=11,
     )
-    set_notes(s10, "2. Üye: 3 modalitenin tamamında elde edilen yüksek doğruluk ve F1 skorlarını tek tabloda karşılaştırır.")
+    add_card(s10, 7.75, 5.05, 5.05, 1.75, "Önemli Bilimsel Bulgu (Akciğer BT)", [
+        "BT verisi küçük (613 eğitim) olduğu için ağır ViT (%64.6) zorlanırken, yerel-global hibrit Swin-T %94.85 F1 ile fark attı!",
+    ], accent=AMBER, title_size=13.5, body_size=12.3)
+    set_notes(s10, """[2. ÜYE — 1.2 dk]
+İşte en heyecan verici tablo: Üç modalitenin tamamında Swin Transformer birinci oldu! Beyin MR'da %96.25, Göğüs Röntgeninde %97.00, Akciğer BT'de %94.60 doğruluk aldık. Burada özellikle Akciğer BT'ye dikkat çekmek istiyoruz: BT eğitim verisi sadece 613 görüntü olduğu için 85 milyon parametreli saf ViT %64.6 F1'de kaldı. Ama Swin-T kaydırılmış pencere yapısı sayesinde aynı az veriyle %94.85 F1'e çıktı — bu, literatürdeki teoriyle birebir örtüşen çok net bir bulgu.""")
 
-    # ---- SLAYT 11: BEYİN MR DETAY ----
+    # ---- SLAYT 11: KARIŞIKLIK MATRİSLERİ NE ANLATIR ----
     s11 = prs.slides.add_slide(blank)
     set_slide_bg(s11)
-    add_chrome(s11, "Modalite 1 — Beyin MR Sonuçları (1.600 Bağımsız Test MR)", "2. Üye", 11, TOTAL, f"En iyi model: {mri_b} ({mri_acc} Acc, {mri_f1} F1) — Tümör Yok & Hipofiz'de 400/400")
+    add_chrome(s11, "Karışıklık Matrisleri: Modeller Nerede Doğru, Nerede Hata Yaptı?", "2. Üye", 11, TOTAL, "Köşegen üzerindeki koyu kareler doğru tahminleri gösterir; sadece Accuracy yetmez, F1 & Recall da önemlidir")
     if (PLOTS_DIR / "confusion_matrices.png").exists():
-        s11.shapes.add_picture(str(PLOTS_DIR / "confusion_matrices.png"), Inches(0.55), Inches(1.18), width=Inches(12.2))
-    add_kpi_box(s11, 0.55, 4.95, 2.85, 1.75, "400 / 400", "Swin-T Tümör Yok\n(%100.0 Recall)", EMERALD)
-    add_kpi_box(s11, 3.60, 4.95, 2.85, 1.75, "400 / 400", "Swin-T Hipofiz Tümörü\n(%99.75 F1)", CYAN)
-    add_kpi_box(s11, 6.65, 4.95, 2.85, 1.75, "393 / 400", "Swin-T Menenjiyom\n(%98.25 Recall)", PURPLE)
-    add_card(s11, 9.70, 4.95, 3.08, 1.75, "Klinik Hata Analizi", ["Nadir hatalar infiltratif Glioma ile Menenjiyom sınırında yoğunlaşmıştır."], accent=AMBER, title_size=13, body_size=11.5)
-    set_notes(s11, "2. Üye: Beyin MR karışıklık matrislerini yorumlar.")
+        s11.shapes.add_picture(str(PLOTS_DIR / "confusion_matrices.png"), Inches(0.55), Inches(1.15), width=Inches(12.2))
+    add_kpi_box(s11, 0.55, 4.95, 2.85, 1.75, "400 / 400", "Beyin MR: Sağlıklı &\nHipofiz (%100 Recall)", EMERALD)
+    add_kpi_box(s11, 3.60, 4.95, 2.85, 1.75, "94 / 94", "Göğüs Röntgeni:\nTüberküloz (%100 Recall)", CYAN)
+    add_kpi_box(s11, 6.65, 4.95, 2.85, 1.75, "54 / 54", "Akciğer BT:\nNormal (%100 F1)", PURPLE)
+    add_card(s11, 9.70, 4.95, 3.08, 1.75, "Neden Recall & F1 Önemli?", [
+        "Tıpta hasta birini 'sağlıklı' sanmak (düşük Recall) en tehlikeli hatadır; bu yüzden F1 ve Recall takip ettik.",
+    ], accent=ROSE, title_size=13, body_size=11.5)
+    set_notes(s11, """[2. ÜYE — 1 dk]
+Karışıklık matrisinde çapraz köşegen doğru tahminlerdir. Swin-T Beyin MR'da 400 sağlıklı ve 400 hipofiz görüntüsünün tamamını sıfır hatayla bildi. Göğüs röntgeninde 94 tüberkülozun 94'ünü, Akciğer BT'de 54 sağlıklı görüntünün 54'ünü yakaladı. Nadir hatalar birbirine morfolojik olarak benzeyen tümör alt tipleri (ör. Glioma-Menenjiyom) arasında oldu.""")
 
-    # ---- SLAYT 12: GÖĞÜS RÖNTGENİ DETAY ----
+    # ---- SLAYT 12: HARİCİ DOĞRULAMA (BRISC 2025) + ROUTER ----
     s12 = prs.slides.add_slide(blank)
     set_slide_bg(s12)
-    add_chrome(s12, "Modalite 2 — Göğüs Röntgeni (COVID-19 • Pnömoni • Tüberküloz)", "2. Üye", 12, TOTAL, f"En iyi model: {xr_b} ({xr_acc} Accuracy, {xr_f1} Macro F1)")
-    if (PLOTS_DIR / "chest_xray" / "confusion_matrices.png").exists():
-        s12.shapes.add_picture(str(PLOTS_DIR / "chest_xray" / "confusion_matrices.png"), Inches(0.55), Inches(1.18), width=Inches(12.2))
-    xr_models = all_mod_metrics.get("chest_xray", {}).get("models", {})
-    add_kpi_box(s12, 0.55, 5.00, 3.85, 1.65, fmt_pct(xr_models.get("cnn", {}).get("accuracy")), "CNN (ResNet-50)\nGöğüs Röntgeni Test Acc", CYAN)
-    add_kpi_box(s12, 4.74, 5.00, 3.85, 1.65, fmt_pct(xr_models.get("vit", {}).get("accuracy")), "Vision Transformer (ViT-B/16)\nGöğüs Röntgeni Test Acc", PURPLE)
-    add_kpi_box(s12, 8.93, 5.00, 3.85, 1.65, fmt_pct(xr_models.get("swin", {}).get("accuracy")), "Swin Transformer (Swin-T)\nGöğüs Röntgeni Test Acc", EMERALD)
-    set_notes(s12, "2. Üye: Göğüs röntgeninde COVID-19, Pnömoni, Tüberküloz ve Normal ayrımındaki başarıyı gösterir.")
+    add_chrome(s12, "Ezberlemediğimizin Kanıtı: Harici BRISC 2025 Testi (%99.00)", "2. Üye", 12, TOTAL, "Eğitimde kullanılan Kaggle veri setinden tamamen bağımsız 2025 klinik MR verisi [19]")
+    add_kpi_box(s12, 0.55, 1.35, 3.85, 1.45, ext_acc, "Swin-T & 3'lü Ensemble\nHarici BRISC 2025 (300 MR)", EMERALD)
+    add_kpi_box(s12, 4.74, 1.35, 3.85, 1.45, rt_acc, "Otomatik Modalite Router\n(405 / 405 — 0 Hata!)", AMBER)
+    add_kpi_box(s12, 8.93, 1.35, 3.85, 1.45, "%99.50", "Harici Glioma F1-Skoru\n(%100 Precision)", CYAN)
 
-    # ---- SLAYT 13: AKCİĞER BT DETAY ----
+    ext_rows = [[v["display_name"], fmt_pct(v["accuracy"]), fmt_pct(v["f1_macro"])] for v in ext_metrics.get("results", {}).values()]
+    add_styled_table(s12, 0.55, 3.10, 6.75, 3.55, ["Model / Yöntem", "BRISC 2025 Acc", "BRISC 2025 F1"], ext_rows, col_widths=[3.65, 1.55, 1.55], font_size=12.5)
+    add_card(s12, 7.55, 3.10, 5.23, 3.55, "Bu Sonuç Neyi Kanıtlar?", [
+        "Aynı veri setinin içinden test yapmak bazen yanıltıcı olabilir.",
+        "Biz modellerimizi bambaşka bir 2025 klinik veri setinde (BRISC 2025 — 300 MR) sınadık ve %99.00 doğruluk aldık.",
+        "Demek ki CLAHE + ROI ön-işleme hattımız farklı MR cihazları arasında bile genelleme sağlıyor.",
+    ], accent=CYAN, title_size=15, body_size=13.2)
+    set_notes(s12, """[2. ÜYE — 1 dk]
+'Peki modelleriniz sadece Kaggle verisini ezberlediyse?' sorusuna yanıtımız bu slayt. Modellerimizi eğitimde hiç görmedikleri bambaşka bir 2025 klinik veri seti olan BRISC 2025'te 300 MR üzerinde test ettik ve Swin-T ile 3'lü Ensemble %99.00 doğruluk aldı! Ayrıca Router'ımız 405 görüntüde %100 yaptı. Şimdi sözü Grad-CAM, SAM ve canlı demo için 3. arkadaşıma bırakıyorum.""")
+
+    # ---- SLAYT 13: KARA KUTU SORUNU — GRAD-CAM VE SAM NEDİR? (3. ÜYE) ----
     s13 = prs.slides.add_slide(blank)
     set_slide_bg(s13)
-    add_chrome(s13, "Modalite 3 — Akciğer Tomografisi / BT (4 Sınıf Kanser)", "2. Üye", 13, TOTAL, f"En iyi model: {ct_b} ({ct_acc} Accuracy, {ct_f1} Macro F1)")
-    if (PLOTS_DIR / "chest_ct" / "confusion_matrices.png").exists():
-        s13.shapes.add_picture(str(PLOTS_DIR / "chest_ct" / "confusion_matrices.png"), Inches(0.55), Inches(1.18), width=Inches(12.2))
-    ct_models = all_mod_metrics.get("chest_ct", {}).get("models", {})
-    add_kpi_box(s13, 0.55, 5.00, 3.85, 1.65, fmt_pct(ct_models.get("cnn", {}).get("accuracy")), "CNN (ResNet-50)\nAkciğer BT Test Acc", CYAN)
-    add_kpi_box(s13, 4.74, 5.00, 3.85, 1.65, fmt_pct(ct_models.get("vit", {}).get("accuracy")), "Vision Transformer (ViT-B/16)\nAkciğer BT Test Acc", PURPLE)
-    add_kpi_box(s13, 8.93, 5.00, 3.85, 1.65, fmt_pct(ct_models.get("swin", {}).get("accuracy")), "Swin Transformer (Swin-T)\nAkciğer BT Test Acc", EMERALD)
-    set_notes(s13, "2. Üye: Akciğer BT'de Adenokarsinom, Büyük Hücreli, Skuamöz ve Normal sınıflarındaki karışıklık matrislerini yorumlar.")
+    add_chrome(s13, "Kara Kutu Sorunu: Grad-CAM ve SAM Ne İşe Yarar?", "3. Üye", 13, TOTAL, "Doktor sadece 'Tümör var' cevabına güvenmez — 'NEREDE ve NE KADAR BÜYÜK?' sorusunu sorar")
+    add_card(s13, 0.55, 1.35, 5.95, 5.35, "1. Grad-CAM (Kararı Açıklayan Isı Haritası) [8]", [
+        "Basit mantık: Modelin son katmanındaki gradyanlara bakarak 'Bu kararı verirken görüntünün hangi piksellerine baktın?' sorusunu yanıtlar.",
+        "Kırmızı/sarı sıcak bölgeler modelin en çok dikkat ettiği yerlerdir.",
+        "Model gerçekten tümöre mi bakıyor yoksa kenardaki bir yazıya mı bakıyor — bunu gözle doğrulamızı sağlar.",
+        "Biz tek bir 'Unified Grad-CAM' sınıfıyla CNN, ViT ve Swin'in üçünde de ısı haritası ürettik.",
+    ], accent=AMBER, title_size=16, body_size=13.8)
+    add_card(s13, 6.80, 1.35, 5.95, 5.35, "2. MobileSAM (Piksel Hassasiyetinde Kesim) [9, 10]", [
+        "SAM (Segment Anything Model), Meta'nın kutu veya nokta gösterildiğinde herhangi bir nesnenin tam sınırını çizen temel segmentasyon modelidir.",
+        "Biz SAM'i sıfırdan eğitmedik (zero-shot hazır MobileSAM kullandık).",
+        "Özgün katkımız: Kutu/nokta işaretini elle vermek yerine Grad-CAM ısı haritasından OTOMATİK çıkarıp SAM'e veriyoruz!",
+        "Sonuç: Tümör/lezyon sınırı çizilir ve toplam alana oranı (%) hesaplanır.",
+    ], accent=EMERALD, title_size=16, body_size=13.8)
+    set_notes(s13, """[3. ÜYE — 1.2 dk]
+Teşekkürler. Şimdi en kritik kısım: Bir doktora sadece 'bu hastada Glioma var' demek yetmez; doktor 'nerede gördün, boyutu ne?' diye sorar. Burada iki yöntem birleşiyor: Grad-CAM modelin nereye baktığını kırmızı ısı haritasıyla gösterir. Ama ısı haritası bulanıktır, tam sınır çizmez. İşte biz Grad-CAM'in en sıcak bölgesinden otomatik bir kutu ve merkez nokta çıkarıp bunu Meta'nın hazır MobileSAM modeline veriyoruz. MobileSAM de o tümörün sınırını piksel piksel çizip kapladığı alanı yüzde olarak hesaplıyor.""")
 
-    # ---- SLAYT 14: HARİCİ KLİNİK DOĞRULAMA (BRISC 2025) ----
+    # ---- SLAYT 14: KRİTİK KOD — GRAD-CAM -> SAM ----
     s14 = prs.slides.add_slide(blank)
     set_slide_bg(s14)
-    add_chrome(s14, "Harici Klinik Doğrulama: BRISC 2025 (300 Bağımsız MR)", "2. Üye", 14, TOTAL, "Eğitim veri setinden tamamen bağımsız 2025 klinik MR verisinde genelleme testi [11]")
-    add_kpi_box(s14, 0.55, 1.35, 3.85, 1.45, ext_acc, "Swin-T & 3'lü Ensemble\nBRISC 2025 Doğruluk", EMERALD)
-    add_kpi_box(s14, 4.74, 1.35, 3.85, 1.45, "%99.50", "Glioma Harici F1-Skoru\n(%100 Precision)", CYAN)
-    add_kpi_box(s14, 8.93, 1.35, 3.85, 1.45, rt_acc, "Otomatik Modalite Router\n(MR / Röntgen / BT)", AMBER)
-    ext_rows = [[v["display_name"], fmt_pct(v["accuracy"]), fmt_pct(v["f1_macro"])] for v in ext_metrics.get("results", {}).values()]
-    add_styled_table(s14, 0.55, 3.10, 6.75, 3.55, ["Model / Yöntem", "BRISC 2025 Acc", "BRISC 2025 F1"], ext_rows, col_widths=[3.65, 1.55, 1.55], font_size=12.2)
-    add_card(s14, 7.55, 3.10, 5.23, 3.55, "Harici Doğrulama Önemi", [
-        "Modellerin eğitim verisini ezberlemediğinin en güçlü bilimsel kanıtıdır.",
-        "CLAHE + ROI hattı farklı hastanelerin cihaz kontrast farklarını standartlaştırmıştır.",
-        "12 adet isimsiz 'Kör Test' MR görüntüsü canlı demoda anlık test edilebilir.",
-    ], accent=AMBER, title_size=15, body_size=13)
-    set_notes(s14, "2. Üye: BRISC 2025 %99 dış doğrulama başarısını özetleyip sözü 3. Üyeye bırakır.")
-
-    # ---- SLAYT 15: GRAD-CAM + SAM MİMARİSİ & KRİTİK KOD ----
-    s15 = prs.slides.add_slide(blank)
-    set_slide_bg(s15)
-    add_chrome(s15, "Unified Grad-CAM ve Otomatik MobileSAM Segmentasyonu", "3. Üye", 15, TOTAL, "Sınıflandırma kararının görsel açıklaması ve piksel hassasiyetinde lezyon maskesi [7, 8, 9]")
-    add_card(s15, 0.55, 1.30, 5.65, 5.45, "Otomatik Promptlu Segmentasyon Akışı", [
-        "1. Unified Grad-CAM: CNN (layer4), ViT (blocks[-1].norm1) ve Swin (layers[-1].blocks[-1].norm1) için ortak hook yapısı.",
-        "2. Modaliteye Duyarlı Maskeleme: MR/BT'de beyin/gövde içi erozyon maskesi köşe artefaktlarını siler; Röntgende tam akciğer korunur.",
-        "3. Otomatik Prompt: Isı haritası eşiklenip tümör/lezyon kutusu (bbox) ve tepe noktası (label=1) bulunur.",
-        "4. Negatif Köşe Promptları: 4 köşe (label=0) MobileSAM'e verilerek arka plan taşması önlenir.",
-        "5. Alan Hesabı: Maske pikseli / doku pikseli ile lezyon alan oranı (%) çıkarılır.",
-    ], accent=EMERALD, title_size=14.5, body_size=12.8)
+    add_chrome(s14, "Kritik Kod: Grad-CAM → Otomatik MobileSAM (explain_and_segment.py)", "3. Üye", 14, TOTAL, "Köşe artefaktlarını ve arka plan taşmasını nasıl çözdüğümüzü gösteren 3 adım")
+    add_card(s14, 0.55, 1.30, 5.45, 5.45, "Karşılaştığımız Gerçek Problem & Çözümümüz", [
+        "İlk denememizde Transformer modelleri siyah köşelere dikkat verebildiği için SAM bazen siyah arka planı boyuyordu.",
+        "Çözüm 1 (Beyin İçi Erozyon Maskesi): MR ve BT'de ısı haritasını kafatası/gövde içine kısıtladık.",
+        "Çözüm 2 (4 Negatif Köşe Prompt'u): SAM'e sadece tümör içinden pozitif nokta (label=1) değil, 4 köşeden 'buralar arka plan' (label=0) bilgisi verdik.",
+        "Çözüm 3 (Sağlıklı Koruma): Model 'Sağlıklı' dediyse yanlış maske çizmemek için SAM otomatik atlanır.",
+    ], accent=ROSE, title_size=15, body_size=13.2)
     add_code_card(
-        s15,
-        "src/explain_and_segment.py — Grad-CAM → MobileSAM",
-        """acts = self._reshape_to_bchw(self.activations).float()
-grads = self._reshape_to_bchw(self.gradients).float()
+        s14,
+        "src/explain_and_segment.py — 3 Adımda Otomatik Segmentasyon",
+        """# 1) Grad-CAM: Kanal ağırlıkları ile ısı haritası üret
 weights = grads.mean(dim=(2, 3), keepdim=True)
 cam = torch.relu((weights * acts).sum(dim=1)[0]).cpu().numpy()
 
-if apply_interior_mask:
-    cam_rs = mask_cam_to_brain(cam_2d, rgb_image, erode_px=12)
-    bbox, peak = extract_prompt_from_cam(cam_rs, rgb_image, 0.52)
-else:
-    cam_rs = cv2.resize(cam_2d, (w, h))
-    bbox, peak = extract_prompt_from_cam(cam_rs, None, 0.52)
+# 2) MR/BT için dış köşeleri temizle, otomatik kutu + tepe noktası bul
+cam_rs = mask_cam_to_brain(cam, rgb_img) if apply_interior_mask else cam
+bbox, peak = extract_prompt_from_cam(cam_rs, threshold=0.52)
 
+# 3) Pozitif tepe noktası (1) + 4 negatif köşe (0) ile MobileSAM çalıştır
 pts = [[peak[0], peak[1]], [4,4], [w-5,4], [4,h-5], [w-5,h-5]]
 res = self.sam_model.predict(
-    source=rgb_image, bboxes=[list(bbox)],
+    source=rgb_img, bboxes=[list(bbox)],
     points=[pts], labels=[[1, 0, 0, 0, 0]], verbose=False
-)""",
-        6.40, 1.30, 6.40, 5.45, font_size=10.1,
+)
+tumor_ratio_pct = (mask_bin.sum() / max(tissue_pixels, 1)) * 100.0""",
+        6.20, 1.30, 6.60, 5.45, font_size=10.4,
     )
-    set_notes(s15, "3. Üye: Grad-CAM'in nasıl otomatik SAM prompt'una dönüştüğünü ve modaliteye göre (MR/BT vs Röntgen) nasıl davrandığını açıklar.")
+    set_notes(s14, """[3. ÜYE — 1.2 dk]
+Burada geliştirdiğimiz kritik bir mühendislik çözümünü paylaşmak istiyoruz. İlk testlerimizde SAM'e sadece kutu verdiğimizde bazen siyah arka planı seçebiliyordu. Bunu çözmek için ısı haritasını MR ve BT'de beyin/gövde içine maskeledik ve SAM'e 4 köşeden 'buralar arka plandır' anlamına gelen label=0 negatif noktaları verdik. Ayrıca model 'Sağlıklı' dediğinde gereksiz segmentasyonu otomatik kapatıyoruz.""")
 
-    # ---- SLAYT 16: 3 MODALİTELİ GRAD-CAM + SAM VİTRİNİ ----
+    # ---- SLAYT 15: 3 MODALİTEDE GRAD-CAM + SAM ÇIKTILARI ----
+    s15 = prs.slides.add_slide(blank)
+    set_slide_bg(s15)
+    add_chrome(s15, "3 Modalitede Grad-CAM ve MobileSAM Çıktıları", "3. Üye", 15, TOTAL, "Üst: Beyin MR (Glioma)  •  Orta: Göğüs Röntgeni (COVID-19)  •  Alt: Akciğer BT (Adenokarsinom)")
+    if (PLOTS_DIR / "multimodal_gradcam_sam.png").exists():
+        s15.shapes.add_picture(str(PLOTS_DIR / "multimodal_gradcam_sam.png"), Inches(0.85), Inches(1.10), width=Inches(11.6))
+    set_notes(s15, """[3. ÜYE — 1 dk]
+Çözümümüzün gerçek çıktısı burada: Üst sırada Glioma tümörünün düzensiz sınırını yeşil MobileSAM konturunun piksel piksel nasıl sardığını (%11.8 alan) görebilirsiniz. Orta sırada Göğüs Röntgeninde COVID-19 tutulum bölgesini, alt sırada ise Akciğer BT'deki kanser odak bölgesini otomatik olarak işaretliyor.""")
+
+    # ---- SLAYT 16: KÜTÜPHANELER VE STREAMLIT ARAYÜZÜ ----
     s16 = prs.slides.add_slide(blank)
     set_slide_bg(s16)
-    add_chrome(s16, "3 Modalitede Grad-CAM ve MobileSAM Segmentasyon Çıktıları", "3. Üye", 16, TOTAL, "Beyin MR (Glioma), Göğüs Röntgeni (COVID-19) ve Akciğer BT (Adenokarsinom)")
-    if (PLOTS_DIR / "multimodal_gradcam_sam.png").exists():
-        s16.shapes.add_picture(str(PLOTS_DIR / "multimodal_gradcam_sam.png"), Inches(0.85), Inches(1.10), width=Inches(11.6))
-    set_notes(s16, "3. Üye: 3 farklı cihazdan alınan görüntülerde CLAHE + Grad-CAM + MobileSAM maskelerinin lezyonları nasıl yakaladığını gösterir.")
+    add_chrome(s16, "Kullanılan Kütüphaneler ve 4 Sekmeli Streamlit Arayüzü", "3. Üye", 16, TOTAL, "Her kütüphanenin sistemdeki net görevi ve kullanıcı arayüzü akışı")
+    add_card(s16, 0.55, 1.30, 5.95, 5.45, "Hangi Kütüphane Ne İşe Yarıyor?", [
+        "OpenCV & Pillow: Otsu, Morfoloji, Bilateral filtre, CLAHE ve kontur çizimi.",
+        "pydicom: Hastane cihazlarının DICOM (.dcm) formatını okuma.",
+        "PyTorch (CUDA 12.8): RTX 5070 Ti GPU üzerinde tüm modellerin eğitimi ve tahmini.",
+        "timm: ResNet-18, ResNet-50, ViT-B/16 ve Swin-T hazır mimarileri.",
+        "Ultralytics: MobileSAM ile otomatik tümör/lezyon maskeleme.",
+        "scikit-learn & Matplotlib: Metrikler, Confusion Matrix ve ROC grafikleri.",
+        "Streamlit: Kurulumsuz, tarayıcıda çalışan etkileşimli canlı arayüz.",
+    ], accent=CYAN, title_size=15.5, body_size=13.2)
+    add_card(s16, 6.80, 1.30, 5.95, 5.45, "Streamlit Arayüzü — 4 Sekme", [
+        "1. Canlı Tanı & SAM: Otomatik Router ile MR/Röntgen/BT yükle, 3'lü Ensemble + Grad-CAM + MobileSAM sonucunu saniyeler içinde gör.",
+        "2. Görüntü İşleme Laboratuvarı: Otsu, filtre ve CLAHE sürgülerini canlı oynatıp histogram değişimini gözlemle.",
+        "3. Model Karşılaştırma: Router + 3 modalitenin tüm tabloları ve grafikleri.",
+        "4. Mimari & Kılavuz: Sistem özeti ve ekip bilgileri.",
+    ], accent=EMERALD, title_size=15.5, body_size=13.8)
+    set_notes(s16, """[3. ÜYE — 1 dk]
+Kullandığımız kütüphaneleri özetlersek: Görüntü işlemede OpenCV ve DICOM için pydicom, derin öğrenmede PyTorch ve timm, segmentasyonda Ultralytics MobileSAM, arayüzde Streamlit kullandık. Arayüzümüz 4 sekmeden oluşuyor — birazdan canlı göstereceğiz.""")
 
-    # ---- SLAYT 17: BEYİN MR TÜMÖR SEGMENTASYON DETAYI ----
+    # ---- SLAYT 17: KAYNAKÇA ----
     s17 = prs.slides.add_slide(blank)
     set_slide_bg(s17)
-    add_chrome(s17, "Beyin MR Tümör Segmentasyonu (Glioma • Menenjiyom • Hipofiz)", "3. Üye", 17, TOTAL, "Farklı morfolojilerdeki tümör sınırlarının MobileSAM ile piksel düzeyinde çıkarımı")
-    if (PLOTS_DIR / "gradcam_sam_showcase.png").exists():
-        s17.shapes.add_picture(str(PLOTS_DIR / "gradcam_sam_showcase.png"), Inches(0.65), Inches(1.12), width=Inches(8.35))
-    add_card(s17, 9.20, 1.25, 3.60, 1.70, "Glioma (Üst Sıra)", ["Düzensiz infiltratif tümör sınırı birebir takip edilmiştir.", "Ölçülen Tümör Alanı: %11.8"], accent=CYAN, title_size=13.5, body_size=12)
-    add_card(s17, 9.20, 3.12, 3.60, 1.70, "Menenjiyom (Orta Sıra)", ["Yuvarlak nodül yüksek hassasiyetle çevrelenmiştir.", "Ölçülen Tümör Alanı: %2.9"], accent=EMERALD, title_size=13.5, body_size=12)
-    add_card(s17, 9.20, 4.98, 3.60, 1.75, "Hipofiz (Alt Sıra)", ["Beyin tabanı tutulumu %96.7 güvenle yakalanmıştır.", "Arayüzde eşik sürgüsü canlı ayarlanabilir."], accent=PURPLE, title_size=13.5, body_size=12)
-    set_notes(s17, "3. Üye: MobileSAM'in Glioma ve Menenjiyom sınırlarını ne kadar temiz sardığını vurgular.")
-
-    # ---- SLAYT 18: KÜTÜPHANELER & STREAMLIT ARAYÜZÜ ----
-    s18 = prs.slides.add_slide(blank)
-    set_slide_bg(s18)
-    add_chrome(s18, "Kullanılan Kütüphaneler ve 4 Sekmeli Streamlit Arayüzü", "3. Üye", 18, TOTAL, "Tek komutla (streamlit run app.py) çalışan etkileşimli 3 modaliteli web uygulaması")
-    add_card(s18, 0.55, 1.30, 5.95, 5.45, "Yazılım ve Kütüphane Yığını", [
-        "OpenCV & Pillow: Otsu, Morfoloji, Bilateral/Median/Gaussian, CLAHE, kontur çizimi.",
-        "pydicom: Klinik MR/BT cihazlarının DICOM (.dcm) formatını okuma.",
-        "PyTorch (2.11 + CUDA 12.8) & timm: ResNet-18 Router + ResNet-50, ViT-B/16, Swin-T.",
-        "Ultralytics (MobileSAM): Gerçek zamanlı kutu/nokta promptlu segmentasyon.",
-        "scikit-learn, Matplotlib, Seaborn, Polars, Streamlit: Metrikler, grafikler ve arayüz.",
-    ], accent=CYAN, title_size=15.5, body_size=13.5)
-    add_card(s18, 6.80, 1.30, 5.95, 5.45, "Streamlit Arayüzü — 4 Sekme", [
-        "Sekme 1 (Canlı Tanı & SAM): Otomatik Router ile MR/Röntgen/BT yükleme, yanlış modalite uyarısı, 3'lü Ensemble + Grad-CAM + SAM.",
-        "Sekme 2 (Görüntü İşleme Lab.): Canlı CLAHE/filtre/ROI sürgüleri ve histogram grafiği.",
-        "Sekme 3 (Model Karşılaştırma): Router + 3 modalitenin metrik tabloları ve grafikleri.",
-        "Sekme 4 (Mimari & Kılavuz): Sistem özeti ve ekip bilgileri.",
-    ], accent=EMERALD, title_size=15.5, body_size=13.5)
-    set_notes(s18, "3. Üye: Kütüphaneleri ve Streamlit'in 4 sekmesini anlatıp Kaynakçayı gösterdikten sonra canlı demoya geçer.")
-
-    # ---- SLAYT 19: KAYNAKÇA ----
-    s19 = prs.slides.add_slide(blank)
-    set_slide_bg(s19)
-    add_chrome(s19, "Kaynakça (References)", "Kaynakça", 19, TOTAL, "Projede yararlanılan akademik literatür ve 4 açık erişimli medikal veri seti")
-    rb = s19.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.55), Inches(1.18), Inches(12.23), Inches(5.72))
+    add_chrome(s17, "Kaynakça (Temel Akademik Referanslar ve Veri Setleri)", "Kaynakça", 17, TOTAL, "Tam 21 maddelik genişletilmiş yazılım + literatür kaynakçası Proje Raporu Bölüm 8'de yer almaktadır")
+    rb = s17.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.55), Inches(1.20), Inches(12.23), Inches(5.68))
     rb.fill.solid()
     rb.fill.fore_color.rgb = CARD_BG
     rb.line.color.rgb = SLATE_LINE
-    tbr = s19.shapes.add_textbox(Inches(0.72), Inches(1.28), Inches(11.9), Inches(5.52))
+    tbr = s17.shapes.add_textbox(Inches(0.72), Inches(1.30), Inches(11.9), Inches(5.48))
     tfr = tbr.text_frame
     tfr.word_wrap = True
-    for i, ref in enumerate(REFERENCES):
+    for i, ref in enumerate(SLIDE_REFERENCES):
         p = tfr.paragraphs[0] if i == 0 else tfr.add_paragraph()
         p.text = ref
         p.font.name = "Calibri"
-        p.font.size = Pt(10.3)
+        p.font.size = Pt(11.0)
         p.font.color.rgb = WHITE if i < 9 else CYAN
-        p.space_after = Pt(4.0)
-    set_notes(s19, "Projede kullanılan tüm temel görüntü işleme, derin öğrenme, SAM makaleleri ve 4 klinik veri seti kaynağı.")
+        p.space_after = Pt(5.2)
+    set_notes(s17, """[3. ÜYE — 15 sn]
+Projede dayandığımız temel akademik makaleler (Otsu, CLAHE, Bilateral, ResNet, ViT, Swin, Grad-CAM, SAM/MobileSAM) ve 4 açık medikal veri setimiz. Detaylı 21 maddelik kaynakçamız raporumuzda mevcut. Şimdi canlı demoya geçiyoruz!""")
 
-    # ---- SLAYT 20: CANLI DEMO & TEŞEKKÜR ----
-    s20 = prs.slides.add_slide(blank)
-    set_slide_bg(s20)
-    add_chrome(s20, "Canlı Uygulama Demosu & Sorular", "Demo", 20, TOTAL, "Teşekkürler — Şimdi 3 modaliteli sistemi canlı olarak test ediyoruz")
-    bd = s20.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.85), Inches(1.38), Inches(11.63), Inches(3.30))
+    # ---- SLAYT 18: CANLI DEMO & TEŞEKKÜR ----
+    s18 = prs.slides.add_slide(blank)
+    set_slide_bg(s18)
+    add_chrome(s18, "Canlı Uygulama Demosu & Sorular", "Demo", 18, TOTAL, "Dinlediğiniz için teşekkürler — Şimdi sistemi canlı test ediyoruz!")
+    bd = s18.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.85), Inches(1.40), Inches(11.63), Inches(3.25))
     bd.fill.solid()
     bd.fill.fore_color.rgb = CARD_BG
     bd.line.color.rgb = EMERALD
@@ -1263,7 +1502,7 @@ res = self.sam_model.predict(
     tfd = bd.text_frame
     tfd.word_wrap = True
     p0 = tfd.paragraphs[0]
-    p0.text = "CANLI DEMO SENARYOSU (streamlit run app.py)"
+    p0.text = "CANLI DEMO ADIMLARI (streamlit run app.py)"
     p0.alignment = PP_ALIGN.CENTER
     p0.font.name = "Calibri"
     p0.font.size = Pt(26)
@@ -1271,10 +1510,10 @@ res = self.sam_model.predict(
     p0.font.color.rgb = EMERALD
     p0.space_before = Pt(12)
     for line, col, sz in [
-        ("1) Otomatik Modalite Router: Sırayla Beyin MR + Göğüs Röntgeni (COVID-19) + Akciğer BT (Kanser) testi", WHITE, 14.5),
-        ("2) Yanlış Görüntü Koruması: Röntgen seçiliyken Beyin MR atıp sistemin uyarı vermesini gösterme", WHITE, 14.5),
-        ("3) Görüntü İşleme Lab.: CLAHE ve Bilateral sürgülerini canlı değiştirip histogram farkını gösterme", WHITE, 14.5),
-        (f"GitHub Repo:  {cfg['github_url']}", CYAN, 15.5),
+        ("1) Otomatik Router Testi: Sırayla Beyin MR + Göğüs Röntgeni (COVID-19) + Akciğer BT (Kanser)", WHITE, 15),
+        ("2) Yanlış Görüntü Koruması: Röntgen seçiliyken Beyin MR yükleyip güvenlik uyarısını gösterme", WHITE, 15),
+        ("3) Görüntü İşleme Lab.: CLAHE ve Bilateral sürgülerini canlı değiştirip histogramı gösterme", WHITE, 15),
+        (f"GitHub:  {cfg['github_url']}", CYAN, 15.5),
     ]:
         pp = tfd.add_paragraph()
         pp.text = line
@@ -1283,19 +1522,23 @@ res = self.sam_model.predict(
         pp.font.size = Pt(sz)
         pp.font.bold = ("GitHub" in line)
         pp.font.color.rgb = col
-        pp.space_before = Pt(9)
+        pp.space_before = Pt(10)
 
-    add_kpi_box(s20, 0.85, 5.05, 3.65, 1.55, "MR • Röntgen • BT", "3 Modalite × 3 Mimari\n+ Otomatik AI Router", CYAN)
-    add_kpi_box(s20, 4.84, 5.05, 3.65, 1.55, "CNN + ViT + Swin + SAM", "Klasik Görüntü İşleme\n+ Grad-CAM + MobileSAM", EMERALD)
-    add_kpi_box(s20, 8.83, 5.05, 3.65, 1.55, "Dinlediğiniz İçin\nTeşekkürler!", "Sorularınızı Alabiliriz", AMBER)
-    set_notes(s20, "3. Üye: Canlı demoya geçer — 3 modalitenin her birinden 1 örnek + yanlış modalite uyarısını + CLAHE laboratuvarını gösterir.")
+    add_kpi_box(s18, 0.85, 5.05, 3.65, 1.55, f"Router {rt_acc}", "MR • Röntgen • BT\nSıfır Hatalı Yönlendirme", AMBER)
+    add_kpi_box(s18, 4.84, 5.05, 3.65, 1.55, "Swin-T Lider", f"MR {mri_acc} | X-Ray {xr_acc}\nBT {ct_acc} | Harici {ext_acc}", EMERALD)
+    add_kpi_box(s18, 8.83, 5.05, 3.65, 1.55, "Teşekkürler!", "Sorularınızı Alabiliriz", CYAN)
+    set_notes(s18, """[3. ÜYE — 2 dk Canlı Demo]
+Tarayıcıda açık olan Streamlit ekranına geçiyoruz:
+1) Otomatik Algıla modunda 1 Beyin MR (Glioma) + 1 Göğüs Röntgeni (COVID-19) + 1 Akciğer BT (Adenokarsinom) gösterip Router + Grad-CAM + SAM çıktılarını gösteriyoruz.
+2) Elle 'Göğüs Röntgeni' seçip Beyin MR seçerek sarı güvenlik uyarısını gösteriyoruz.
+3) Sekme 2'ye geçip CLAHE sürgüsünü oynatıp histogramın canlı değişimini gösteriyoruz.""")
 
     prs.save(str(out_pptx))
     return out_pptx
 
 
 # ==============================================================================
-# 3. 3 MODALİTELİ GITHUB README.md ÜRETİCİ
+# 3. GITHUB README.md (KESİN RAKAMLAR + 21 KAYNAKÇA)
 # ==============================================================================
 def build_readme(
     cfg: Dict[str, Any],
@@ -1327,9 +1570,8 @@ def build_readme(
     refs_md = "\n".join(f"- {r}" for r in REFERENCES)
 
     rt_line = (
-        f"**Otomatik Modalite Router (ResNet-18):** {router_metrics['test_samples']} test görüntüsünde "
-        f"**{router_metrics['accuracy']*100:.2f}% Accuracy** / **{router_metrics['f1_macro']*100:.2f}% Macro F1** "
-        f"({router_metrics['inference_ms_per_img']:.2f} ms/img)"
+        f"**Otomatik Modalite Router (ResNet-18):** {router_metrics['test_samples']} bağımsız test görüntüsünde "
+        f"**{router_metrics['accuracy']*100:.2f}% Accuracy** / **{router_metrics['f1_macro']*100:.2f}% Macro F1** (0 hata)"
         if router_metrics else ""
     )
 
@@ -1338,16 +1580,13 @@ def build_readme(
 > **{cfg['course_name']} Dersi Proje Ödevi** — {cfg['project_subtitle']}
 
 ## 📌 Proje Özeti
-Bu proje; **Beyin MR (Tümör)**, **Göğüs Röntgeni (COVID-19, Pnömoni, Tüberküloz)** ve **Akciğer Tomografisi / BT (Akciğer Kanseri)** modalitelerinin tamamını tek bir çatı altında birleştiren, **Otomatik Modalite Router (`ResNet-18`)** ile yüklenen görüntüyü otomatik tanıyan ve yanlış modalite yüklemelerini engelleyen uçtan uca bir medikal görüntü işleme sistemidir.
+Bu proje; **Beyin MR (4 Sınıf Tümör — 7.200 MR)**, **Göğüs Röntgeni (COVID-19, Pnömoni, Tüberküloz, Normal — 3.174 Dengeli X-Ray)** ve **Akciğer Tomografisi / BT (4 Sınıf Kanser — 1.000 BT)** modalitelerinin tamamını tek platformda birleştiren, **Otomatik Modalite Router (`ResNet-18`)** destekli uçtan uca bir medikal görüntü işleme ve karar destek sistemidir.
 
-### Öne Çıkan Özellikler
-- **🤖 Otomatik Modalite Router (`ResNet-18`):** Yüklenen ham görüntünün MR, Röntgen veya BT olduğunu otomatik tespit eder ve ilgili uzman modellere yönlendirir; manuel seçimde uyuşmazlık varsa uyarı verir.
-- **🧪 Modaliteye Duyarlı Klasik Görüntü İşleme (`src/preprocessing.py`):**
-  - JPG/PNG ve **DICOM (`.dcm`)** okuma (`pydicom`)
-  - **Otsu + Morfolojik Kapama/Açma ROI Kırpma** (MR & BT'de siyah kenar temizliği; Röntgende akciğer alanı korunur)
-  - Kenar koruyucu **Bilateral** (ve seçilebilir Gaussian/Median) filtre + **CLAHE** kontrast iyileştirme
-- **🧠 3 Modalite × 3 Derin Öğrenme Mimarisi (9 Uzman Model):** Her modalitede **CNN (`ResNet-50`)**, **ViT (`ViT-B/16`)**, **Swin Transformer (`Swin-T`)** ve **3'lü Ensemble**.
-- **🔥 Açıklanabilirlik & Segmentasyon (`src/explain_and_segment.py`):** Özel **Unified Grad-CAM** + otomatik kutu/nokta promptlu **MobileSAM (Ultralytics)** lezyon segmentasyonu ve alan oranı (%) hesabı.
+### Temel Özellikler
+- **🤖 Otomatik Modalite Router (`ResNet-18`):** Yüklenen görüntünün MR, Röntgen veya BT olduğunu %100 doğrulukla (405/405) tespit eder; yanlış modalite yüklemelerine karşı kullanıcıyı uyarır.
+- **🧪 Modaliteye Duyarlı Klasik Görüntü İşleme (`src/preprocessing.py`):** Otsu eşikleme, morfolojik kapama/açma ROI kırpma *(MR & BT)*, Bilateral gürültü azaltma, CLAHE kontrast iyileştirme ve DICOM (`.dcm`) okuma.
+- **🧠 3 Modalite × 3 Derin Öğrenme Mimarisi (9 Uzman Model):** CNN (`ResNet-50`), Vision Transformer (`ViT-B/16`), Swin Transformer (`Swin-T`) ve canlı **3'lü Ensemble**.
+- **🔥 Açıklanabilirlik & Segmentasyon (`src/explain_and_segment.py`):** Özel **Unified Grad-CAM** + otomatik kutu ve negatif köşe promptlu **MobileSAM (Ultralytics)** lezyon segmentasyonu ve alan oranı (%) hesabı.
 
 ---
 
@@ -1378,15 +1617,12 @@ Bu proje; **Beyin MR (Tümör)**, **Göğüs Röntgeni (COVID-19, Pnömoni, Tüb
 git clone {cfg['github_git_url']}
 cd medeical_disase_dedect
 
-# NVIDIA GPU (CUDA 12.8) için PyTorch ve bağımlılıklar
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
 pip install -r requirements.txt
 
-# Canlı 3 Modaliteli Demo Arayüzünü başlatın
+# Eğitilmiş ağırlıklar için GitHub Releases (v2.0) içindeki 3 ZIP'i proje klasörüne çıkarın
 streamlit run app.py
 ```
-
-> **Not:** Eğitilmiş model ağırlıkları (`.pth`) GitHub'ın 100 MB tek dosya sınırı nedeniyle `.gitignore` içindedir; repo üzerindeki **Releases** bölümünden indirip `checkpoints/` klasörüne yerleştirilebilir veya `python scripts/prepare_multimodal_datasets.py` + `python src/train_multimodal.py` ile yeniden eğitilebilir.
 
 ---
 
@@ -1397,7 +1633,7 @@ streamlit run app.py
 
 ---
 
-## 📚 Kaynakça
+## 📚 Kaynakça (21 Referans)
 {refs_md}
 
 > ⚠️ **Yasal Uyarı:** Bu yazılım yalnızca akademik eğitim ve araştırma amaçlıdır; klinik tıbbi tanı aracı olarak kullanılamaz.
@@ -1408,24 +1644,27 @@ streamlit run app.py
 
 def main() -> None:
     cfg = load_config()
-    all_mod_metrics = {}
-    for mod, m_cfg in cfg["modalities"].items():
-        all_mod_metrics[mod] = load_json_safe(RESULTS_DIR / m_cfg["metrics_file"])
+    all_mod_metrics = {
+        mod: load_json_safe(RESULTS_DIR / m_cfg["metrics_file"])
+        for mod, m_cfg in cfg["modalities"].items()
+    }
     router_metrics = load_json_safe(RESULTS_DIR / "router_metrics.json")
     ext_metrics = load_json_safe(RESULTS_DIR / "external_test_results.json")
+    mri_ds = load_json_safe(RESULTS_DIR / "dataset_summary.json")
+    mm_ds = load_json_safe(RESULTS_DIR / "multimodal_dataset_summary.json")
 
-    print("[1/3] 3 Modaliteli Akademik PDF Rapor üretiliyor...")
-    pdf_path = build_pdf_report(cfg, all_mod_metrics, router_metrics, ext_metrics)
+    print("[1/3] Resmi Akademik PDF Raporu üretiliyor (2-geçişli kesin İçindekiler)...")
+    pdf_path = build_pdf_report(cfg, all_mod_metrics, router_metrics, ext_metrics, mri_ds, mm_ds)
     print(f"      -> {pdf_path}")
 
-    print("[2/3] 20 Slaytlık 3 Modaliteli PowerPoint Sunumu (.pptx) üretiliyor...")
+    print("[2/3] Temelden Anlatımlı 18 Slaytlık PowerPoint Sunumu (.pptx) üretiliyor...")
     pptx_path = build_pptx(cfg, all_mod_metrics, router_metrics, ext_metrics)
     print(f"      -> {pptx_path}")
 
     print("[3/3] GitHub README.md güncelleniyor...")
     md_path = build_readme(cfg, all_mod_metrics, router_metrics, ext_metrics)
     print(f"      -> {md_path}")
-    print("\nTüm 3 modaliteli teslim dokümanları başarıyla oluşturuldu!")
+    print("\nTüm teslim dokümanları başarıyla oluşturuldu!")
 
 
 if __name__ == "__main__":

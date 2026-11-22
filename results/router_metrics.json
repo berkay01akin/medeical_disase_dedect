@@ -1,0 +1,30 @@
+{
+  "model": "ResNet-18 (Otomatik Modalite Router)",
+  "classes": [
+    "brain_mri",
+    "chest_ct",
+    "chest_xray"
+  ],
+  "test_samples": 405,
+  "accuracy": 1.0,
+  "f1_macro": 1.0,
+  "inference_ms_per_img": 43.04,
+  "train_time_sec": 197.2,
+  "confusion_matrix": [
+    [
+      135,
+      0,
+      0
+    ],
+    [
+      0,
+      135,
+      0
+    ],
+    [
+      0,
+      0,
+      135
+    ]
+  ]
+}

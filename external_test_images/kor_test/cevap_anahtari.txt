@@ -1,0 +1,14 @@
+Dosya Adı | Gerçek Sınıf (Türkçe) | Kaynak ID
+-----------------------------------------------------------------
+yeni_test_01.jpg | Hipofiz (Pituitary) Tümörü | brisc2025_train_03583_pi_ax_t1
+yeni_test_02.jpg | Hipofiz (Pituitary) Tümörü | brisc2025_train_03687_pi_ax_t1
+yeni_test_03.jpg | Glioma Tümörü              | brisc2025_train_00088_gl_ax_t1
+yeni_test_04.jpg | Menenjiyom Tümörü          | brisc2025_test_00354_me_ax_t1
+yeni_test_05.jpg | Menenjiyom Tümörü          | brisc2025_train_01280_me_ax_t1
+yeni_test_06.jpg | Glioma Tümörü              | brisc2025_train_00106_gl_ax_t1
+yeni_test_07.jpg | Menenjiyom Tümörü          | brisc2025_train_01242_me_ax_t1
+yeni_test_08.jpg | Glioma Tümörü              | brisc2025_test_00020_gl_ax_t1
+yeni_test_09.jpg | Menenjiyom Tümörü          | brisc2025_test_00344_me_ax_t1
+yeni_test_10.jpg | Glioma Tümörü              | brisc2025_train_00123_gl_ax_t1
+yeni_test_11.jpg | Hipofiz (Pituitary) Tümörü | brisc2025_train_03944_pi_ax_t1
+yeni_test_12.jpg | Hipofiz (Pituitary) Tümörü | brisc2025_test_00793_pi_ax_t1

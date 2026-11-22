@@ -1,115 +1,93 @@
-# 🧠 Medikal Görüntülerden Hastalık Tespiti
+# 🏥 Medikal Görüntülerden Hastalık Tespiti (MR • Röntgen • Tomografi)
 
-> **Görüntü İşleme Dersi Proje Ödevi** — Beyin MR Görüntülerinde Klasik Görüntü İşleme, CNN, ViT, Swin Transformer ve SAM Tabanlı Tümör Tespiti ve Segmentasyonu
+> **Görüntü İşleme Dersi Proje Ödevi** — MR, Röntgen ve Tomografi (BT) Görüntülerinde Otomatik Modalite Yönlendirmeli Klasik Görüntü İşleme, CNN, ViT, Swin Transformer ve SAM Tabanlı Hastalık Tespiti
 
 ## 📌 Proje Özeti
-Bu proje, Beyin MR görüntülerinden **Glioma, Menenjiyom, Hipofiz Tümörü ve Sağlıklı (Tümör Yok)** sınıflarını tespit eden, kararını **Grad-CAM** ile görsel olarak açıklayan ve **SAM (MobileSAM)** kullanarak tümör bölgesini piksel hassasiyetinde segmente eden uçtan uca bir görüntü işleme ve derin öğrenme uygulamasıdır.
+Bu proje; **Beyin MR (Tümör)**, **Göğüs Röntgeni (COVID-19, Pnömoni, Tüberküloz)** ve **Akciğer Tomografisi / BT (Akciğer Kanseri)** modalitelerinin tamamını tek bir çatı altında birleştiren, **Otomatik Modalite Router (`ResNet-18`)** ile yüklenen görüntüyü otomatik tanıyan ve yanlış modalite yüklemelerini engelleyen uçtan uca bir medikal görüntü işleme sistemidir.
 
 ### Öne Çıkan Özellikler
-- **Klasik Görüntü İşleme Ön İşleme Hattı (`src/preprocessing.py`):**
-  - JPG/PNG ve **DICOM (`.dcm`)** okuma desteği
-  - **Otsu Otomatik Eşikleme + Morfolojik Kapama/Açma + En Büyük Kontur** ile beyin ROI kırpma
-  - Kenar koruyucu **Bilateral** (ve seçilebilir Gaussian/Median) gürültü filtresi
-  - **CLAHE** (*Contrast Limited Adaptive Histogram Equalization*) ile yerel kontrast iyileştirme
-- **Karşılaştırmalı Derin Öğrenme (`src/models.py`, `src/train.py`):**
-  - **CNN:** `ResNet-50`
-  - **Vision Transformer:** `ViT-B/16` (`vit_base_patch16_224`)
-  - **Swin Transformer:** `Swin-T` (`swin_tiny_patch4_window7_224`)
-  - Canlı arayüzde **3'lü Ensemble** seçeneği
-- **Açıklanabilir Yapay Zeka & Segmentasyon (`src/explain_and_segment.py`):**
-  - CNN, ViT ve Swin mimarilerinin tamamını destekleyen özel **Unified Grad-CAM**
-  - Grad-CAM ısı haritasından otomatik kutu/nokta prompt çıkarımı ile **MobileSAM (Ultralytics)** tümör segmentasyonu ve alan oranı (%) hesabı
-- **Canlı Demo Arayüzü (`app.py`):** 4 sekmeli etkileşimli **Streamlit** web uygulaması.
+- **🤖 Otomatik Modalite Router (`ResNet-18`):** Yüklenen ham görüntünün MR, Röntgen veya BT olduğunu otomatik tespit eder ve ilgili uzman modellere yönlendirir; manuel seçimde uyuşmazlık varsa uyarı verir.
+- **🧪 Modaliteye Duyarlı Klasik Görüntü İşleme (`src/preprocessing.py`):**
+  - JPG/PNG ve **DICOM (`.dcm`)** okuma (`pydicom`)
+  - **Otsu + Morfolojik Kapama/Açma ROI Kırpma** (MR & BT'de siyah kenar temizliği; Röntgende akciğer alanı korunur)
+  - Kenar koruyucu **Bilateral** (ve seçilebilir Gaussian/Median) filtre + **CLAHE** kontrast iyileştirme
+- **🧠 3 Modalite × 3 Derin Öğrenme Mimarisi (9 Uzman Model):** Her modalitede **CNN (`ResNet-50`)**, **ViT (`ViT-B/16`)**, **Swin Transformer (`Swin-T`)** ve **3'lü Ensemble**.
+- **🔥 Açıklanabilirlik & Segmentasyon (`src/explain_and_segment.py`):** Özel **Unified Grad-CAM** + otomatik kutu/nokta promptlu **MobileSAM (Ultralytics)** lezyon segmentasyonu ve alan oranı (%) hesabı.
 
 ---
 
-## 📊 Deneysel Sonuçlar (1.600 Bağımsız Test MR Görüntüsü)
+## 📊 Deneysel Sonuçlar
 
-Donanım: **NVIDIA GeForce RTX 5070 Ti**
+**Otomatik Modalite Router (ResNet-18):** 405 test görüntüsünde **100.00% Accuracy** / **100.00% Macro F1** (43.04 ms/img)
 
-| Model | Parametre | Accuracy | Precision | Recall | Macro F1 | ROC-AUC | Çıkarım Hızı |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **CNN (ResNet-50)** | 23.5M | **95.25%** | 95.39% | 95.25% | **95.20%** | 98.72% | 12.26 ms |
-| **Vision Transformer (ViT-B/16)** | 85.8M | **95.31%** | 95.58% | 95.31% | **95.25%** | 98.09% | 11.52 ms |
-| **Swin Transformer (Swin-T)** | 27.5M | **96.25%** | 96.44% | 96.25% | **96.19%** | 98.66% | 11.45 ms |
+### 1. 3 Modalitede CNN vs ViT vs Swin Karşılaştırması
+| Modalite | Model | Accuracy | Precision | Recall | Macro F1 | ROC-AUC | Hız |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| 🧠 **Beyin MR** | CNN (ResNet-50) | **95.25%** | 95.39% | 95.25% | **95.20%** | 98.72% | 12.26 ms |
+| 🧠 **Beyin MR** | Vision Transformer (ViT-B/16) | **95.31%** | 95.58% | 95.31% | **95.25%** | 98.09% | 11.52 ms |
+| 🧠 **Beyin MR** | Swin Transformer (Swin-T) | **96.25%** | 96.44% | 96.25% | **96.19%** | 98.66% | 11.45 ms |
+| 🫁 **Göğüs Röntgeni** | CNN (ResNet-50) | **95.58%** | 95.64% | 96.11% | **95.75%** | 99.55% | 26.83 ms |
+| 🫁 **Göğüs Röntgeni** | Vision Transformer (ViT-B/16) | **96.21%** | 96.59% | 96.54% | **96.49%** | 99.65% | 26.77 ms |
+| 🫁 **Göğüs Röntgeni** | Swin Transformer (Swin-T) | **97.00%** | 96.80% | 97.36% | **97.05%** | 99.73% | 26.65 ms |
+| 🩻 **Akciğer BT** | CNN (ResNet-50) | **76.83%** | 82.49% | 76.12% | **78.07%** | 94.66% | 55.01 ms |
+| 🩻 **Akciğer BT** | Vision Transformer (ViT-B/16) | **66.35%** | 68.68% | 64.08% | **64.57%** | 86.15% | 53.73 ms |
+| 🩻 **Akciğer BT** | Swin Transformer (Swin-T) | **94.60%** | 95.00% | 94.78% | **94.85%** | 99.66% | 52.27 ms |
+
+### 2. Harici Klinik Doğrulama — BRISC 2025 (300 Bağımsız Beyin MR)
+| Model / Yöntem | Harici Accuracy | Harici Macro F1 |
+| :--- | :---: | :---: |
+| **CNN (ResNet-50)** | **98.00%** | **98.15%** |
+| **Vision Transformer (ViT-B/16)** | **98.33%** | **98.50%** |
+| **Swin Transformer (Swin-T)** | **99.00%** | **99.00%** |
+| **3'lü Ensemble (CNN + ViT + Swin)** | **99.00%** | **99.00%** |
 
 ### Görsel Çıktılar
-![Klasik Görüntü İşleme Ön İşleme Hattı](results/plots/preprocessing_showcase.png)
-![Model Karşılaştırması](results/plots/model_comparison.png)
-![Karışıklık Matrisleri](results/plots/confusion_matrices.png)
-![Grad-CAM ve SAM Segmentasyon](results/plots/gradcam_sam_showcase.png)
+![3 Modaliteli Genel Karşılaştırma](results/plots/multimodal_overview.png)
+![3 Modaliteli Grad-CAM ve MobileSAM](results/plots/multimodal_gradcam_sam.png)
+![Klasik Görüntü İşleme Hattı](results/plots/preprocessing_showcase.png)
 
 ---
 
-## 🛠️ Kurulum ve Kullanım Kılavuzu
+## 🛠️ Kurulum ve Kullanım
 
-### 1. Repoyu Klonlayın
 ```bash
 git clone https://github.com/berkay01akin/medeical_disase_dedect.git
 cd medeical_disase_dedect
-```
 
-### 2. Bağımlılıkları Kurun
-```bash
-# NVIDIA GPU (RTX 50 serisi dahil CUDA 12.8) için PyTorch:
+# NVIDIA GPU (CUDA 12.8) için PyTorch ve bağımlılıklar
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
-
-# Diğer kütüphaneler:
 pip install -r requirements.txt
-```
 
-### 3. Veri Setini Hazırlayın (Opsiyonel — Yeniden Eğitim İçin)
-Kaggle *Brain Tumor MRI Dataset* (7.200 MR) ZIP dosyasını indirip ön-işleme hattından geçirin:
-```bash
-python scripts/prepare_dataset.py --zip-path "brain tumor.zip"
-```
-
-### 4. Modelleri Eğitin
-```bash
-python src/train.py --models cnn vit swin
-```
-
-### 5. Canlı Demo Arayüzünü Başlatın
-```bash
+# Canlı 3 Modaliteli Demo Arayüzünü başlatın
 streamlit run app.py
 ```
 
-### 6. Rapor ve Sunum Dosyalarını Yeniden Üretin
-```bash
-python scripts/generate_deliverables.py
-```
-
----
-
-## 📁 Proje Klasör Yapısı
-```text
-├── app.py                              # 4 sekmeli Streamlit canlı demo arayüzü
-├── project_config.json                 # Proje, ekip, repo ve hiperparametre yapılandırması
-├── requirements.txt                    # Python bağımlılıkları
-├── src/
-│   ├── preprocessing.py                # Otsu, Morfoloji, ROI, Bilateral/Median/Gaussian, CLAHE, DICOM
-│   ├── models.py                       # timm CNN (ResNet-50), ViT-B/16 ve Swin-T fabrikası
-│   ├── explain_and_segment.py          # Unified Grad-CAM ve MobileSAM tümör segmentasyonu
-│   └── train.py                        # Çoklu model eğitim, test ve grafik üretim betiği
-├── scripts/
-│   ├── prepare_dataset.py              # Veri seti çıkarma, stratified bölme ve ön-işleme
-│   └── generate_deliverables.py        # Otomatik PDF rapor, PPTX sunum ve README üreticisi
-├── sample_images/                      # Canlı demo için 12 adet örnek MR görüntüsü
-├── results/
-│   ├── metrics.json                    # Deneysel test metrikleri
-│   └── plots/                          # Karşılaştırma, Confusion Matrix, ROC, Grad-CAM/SAM grafikleri
-└── docs/
-    ├── Proje_Raporu.pdf                # Ders kurallarına uygun proje raporu (kapakta GitHub linki)
-    └── Sunum_Medikal_Goruntu_Tespiti.pptx  # 15 slaytlık 3 kişilik sunum dosyası
-```
+> **Not:** Eğitilmiş model ağırlıkları (`.pth`) GitHub'ın 100 MB tek dosya sınırı nedeniyle `.gitignore` içindedir; repo üzerindeki **Releases** bölümünden indirip `checkpoints/` klasörüne yerleştirilebilir veya `python scripts/prepare_multimodal_datasets.py` + `python src/train_multimodal.py` ile yeniden eğitilebilir.
 
 ---
 
 ## 👥 Grup Üyeleri
 | Ad Soyad | Öğrenci No | Sorumluluk Alanı |
 | :--- | :---: | :--- |
-| Berkay Akın | Öğrenci No | Veri Seti & Klasik Görüntü İşleme |
-| 2. Grup Üyesi (Ad Soyad) | Öğrenci No | Derin Öğrenme Modelleri (CNN, ViT, Swin) & Değerlendirme |
-| 3. Grup Üyesi (Ad Soyad) | Öğrenci No | Grad-CAM, SAM Segmentasyon & Streamlit Demo Arayüzü |
+| Berkay Akın | Öğrenci No | Veri Setleri, Klasik Görüntü İşleme & Modalite Router |
+| 2. Grup Üyesi (Ad Soyad) | Öğrenci No | Çoklu Modalite Derin Öğrenme Modelleri (CNN, ViT, Swin) & Değerlendirme |
+| 3. Grup Üyesi (Ad Soyad) | Öğrenci No | Grad-CAM, MobileSAM Segmentasyon & 3 Modaliteli Streamlit Arayüzü |
+
+---
+
+## 📚 Kaynakça
+- [1] N. Otsu, 'A Threshold Selection Method from Gray-Level Histograms,' IEEE Trans. Systems, Man, and Cybernetics, vol. 9, no. 1, pp. 62–66, 1979.
+- [2] K. Zuiderveld, 'Contrast Limited Adaptive Histogram Equalization,' Graphics Gems IV, Academic Press, pp. 474–485, 1994.
+- [3] C. Tomasi and R. Manduchi, 'Bilateral Filtering for Gray and Color Images,' Proc. IEEE ICCV, pp. 839–846, 1998.
+- [4] K. He, X. Zhang, S. Ren, and J. Sun, 'Deep Residual Learning for Image Recognition,' Proc. IEEE/CVF CVPR, pp. 770–778, 2016.
+- [5] A. Dosovitskiy et al., 'An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale,' ICLR, 2021.
+- [6] Z. Liu et al., 'Swin Transformer: Hierarchical Vision Transformer using Shifted Windows,' Proc. IEEE/CVF ICCV, pp. 10012–10022, 2021.
+- [7] R. R. Selvaraju et al., 'Grad-CAM: Visual Explanations from Deep Networks via Gradient-Based Localization,' Proc. IEEE ICCV, pp. 618–626, 2017.
+- [8] A. Kirillov et al., 'Segment Anything,' Proc. IEEE/CVF ICCV, pp. 4015–4026, 2023.
+- [9] C. Zhang et al., 'Faster Segment Anything: Towards Lightweight SAM for Mobile Applications (MobileSAM),' arXiv:2306.14289, 2023.
+- [10] M. Nickparvar, 'Brain Tumor MRI Dataset (Figshare, SARTAJ, Br35H),' Kaggle Dataset, 2021.
+- [11] ChehabLab, 'BRISC 2025: Brain Tumor MRI Classification & Segmentation Benchmark,' Hugging Face (chehablab/BRISC2025), 2025.
+- [12] M. E. H. Chowdhury et al., 'COVID-19 Radiography & Pneumonia/Tuberculosis Chest X-Ray Benchmark,' IEEE Access / Hugging Face (fahmiaziz/pneumonia-covid-tuberculosis).
+- [13] Chest CT-Scan Lung Cancer 4-Class Dataset (Adenocarcinoma, Large Cell, Squamous Cell, Normal), Hugging Face (Kabil007/LungCancer4Types), 2024.
 
 > ⚠️ **Yasal Uyarı:** Bu yazılım yalnızca akademik eğitim ve araştırma amaçlıdır; klinik tıbbi tanı aracı olarak kullanılamaz.

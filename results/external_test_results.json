@@ -1,0 +1,32 @@
+{
+  "dataset": "chehablab/BRISC2025 (Harici Klinik MR Testi)",
+  "evaluated_images": 300,
+  "class_counts_available": {
+    "glioma": 479,
+    "meningioma": 560,
+    "notumor": 0,
+    "pituitary": 550
+  },
+  "results": {
+    "cnn": {
+      "display_name": "CNN (ResNet-50)",
+      "accuracy": 0.98,
+      "f1_macro": 0.9815
+    },
+    "vit": {
+      "display_name": "Vision Transformer (ViT-B/16)",
+      "accuracy": 0.9833,
+      "f1_macro": 0.985
+    },
+    "swin": {
+      "display_name": "Swin Transformer (Swin-T)",
+      "accuracy": 0.99,
+      "f1_macro": 0.99
+    },
+    "ensemble": {
+      "display_name": "3'lü Ensemble (CNN + ViT + Swin)",
+      "accuracy": 0.99,
+      "f1_macro": 0.99
+    }
+  }
+}

@@ -1,0 +1,440 @@
+{
+  "modality": "chest_ct",
+  "display_name": "Akciğer Tomografisi (BT) — Kanser Tespiti",
+  "device": "NVIDIA GeForce RTX 5070 Ti",
+  "classes": [
+    "adenocarcinoma",
+    "large_cell_carcinoma",
+    "normal",
+    "squamous_cell_carcinoma"
+  ],
+  "best_model_key": "swin",
+  "models": {
+    "cnn": {
+      "model_key": "cnn",
+      "display_name": "CNN (ResNet-50)",
+      "short_name": "ResNet-50",
+      "family": "CNN",
+      "timm_name": "resnet50",
+      "params_millions": 23.52,
+      "train_time_sec": 422.6,
+      "best_epoch": 11,
+      "test_loss": 0.6405,
+      "accuracy": 0.7683,
+      "precision_macro": 0.8249,
+      "recall_macro": 0.7612,
+      "f1_macro": 0.7807,
+      "roc_auc_macro": 0.9466,
+      "inference_ms_per_img": 55.01,
+      "test_samples": 315,
+      "confusion_matrix": [
+        [
+          105,
+          4,
+          0,
+          11
+        ],
+        [
+          13,
+          30,
+          0,
+          8
+        ],
+        [
+          1,
+          0,
+          53,
+          0
+        ],
+        [
+          36,
+          0,
+          0,
+          54
+        ]
+      ],
+      "per_class": {
+        "adenocarcinoma": {
+          "precision": 0.6774,
+          "recall": 0.875,
+          "f1": 0.7636,
+          "support": 120
+        },
+        "large_cell_carcinoma": {
+          "precision": 0.8824,
+          "recall": 0.5882,
+          "f1": 0.7059,
+          "support": 51
+        },
+        "normal": {
+          "precision": 1.0,
+          "recall": 0.9815,
+          "f1": 0.9907,
+          "support": 54
+        },
+        "squamous_cell_carcinoma": {
+          "precision": 0.7397,
+          "recall": 0.6,
+          "f1": 0.6626,
+          "support": 90
+        }
+      },
+      "history": {
+        "train_loss": [
+          1.3211,
+          1.1244,
+          0.9389,
+          0.8346,
+          0.7425,
+          0.6638,
+          0.5785,
+          0.5472,
+          0.5248,
+          0.4868,
+          0.4721,
+          0.4339
+        ],
+        "train_acc": [
+          0.429,
+          0.5726,
+          0.6346,
+          0.677,
+          0.7537,
+          0.7879,
+          0.845,
+          0.8695,
+          0.8711,
+          0.8695,
+          0.8923,
+          0.925
+        ],
+        "val_loss": [
+          1.3318,
+          1.1066,
+          1.0172,
+          1.0629,
+          0.9883,
+          0.8726,
+          0.8897,
+          0.893,
+          0.8546,
+          0.8285,
+          0.772,
+          0.8192
+        ],
+        "val_acc": [
+          0.4861,
+          0.4861,
+          0.5,
+          0.5139,
+          0.5139,
+          0.6944,
+          0.625,
+          0.6389,
+          0.7083,
+          0.7083,
+          0.7083,
+          0.6944
+        ],
+        "val_f1": [
+          0.3988,
+          0.4131,
+          0.4115,
+          0.4723,
+          0.476,
+          0.711,
+          0.6254,
+          0.6568,
+          0.7243,
+          0.7209,
+          0.7248,
+          0.7065
+        ]
+      }
+    },
+    "vit": {
+      "model_key": "vit",
+      "display_name": "Vision Transformer (ViT-B/16)",
+      "short_name": "ViT-B/16",
+      "family": "ViT",
+      "timm_name": "vit_base_patch16_224",
+      "params_millions": 85.8,
+      "train_time_sec": 425.7,
+      "best_epoch": 12,
+      "test_loss": 0.8537,
+      "accuracy": 0.6635,
+      "precision_macro": 0.6868,
+      "recall_macro": 0.6408,
+      "f1_macro": 0.6457,
+      "roc_auc_macro": 0.8615,
+      "inference_ms_per_img": 53.73,
+      "test_samples": 315,
+      "confusion_matrix": [
+        [
+          97,
+          7,
+          0,
+          16
+        ],
+        [
+          29,
+          13,
+          0,
+          9
+        ],
+        [
+          0,
+          0,
+          54,
+          0
+        ],
+        [
+          40,
+          5,
+          0,
+          45
+        ]
+      ],
+      "per_class": {
+        "adenocarcinoma": {
+          "precision": 0.5843,
+          "recall": 0.8083,
+          "f1": 0.6783,
+          "support": 120
+        },
+        "large_cell_carcinoma": {
+          "precision": 0.52,
+          "recall": 0.2549,
+          "f1": 0.3421,
+          "support": 51
+        },
+        "normal": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 54
+        },
+        "squamous_cell_carcinoma": {
+          "precision": 0.6429,
+          "recall": 0.5,
+          "f1": 0.5625,
+          "support": 90
+        }
+      },
+      "history": {
+        "train_loss": [
+          1.3854,
+          1.1785,
+          1.0581,
+          0.9934,
+          1.0679,
+          0.971,
+          0.9721,
+          0.9288,
+          0.927,
+          0.8538,
+          0.808,
+          0.7896
+        ],
+        "train_acc": [
+          0.4388,
+          0.4617,
+          0.5073,
+          0.5628,
+          0.5302,
+          0.553,
+          0.5579,
+          0.5775,
+          0.5791,
+          0.6395,
+          0.677,
+          0.6786
+        ],
+        "val_loss": [
+          1.1334,
+          1.1663,
+          1.0339,
+          1.5359,
+          1.0176,
+          1.1524,
+          1.1326,
+          1.288,
+          1.0799,
+          1.039,
+          1.063,
+          1.0169
+        ],
+        "val_acc": [
+          0.4583,
+          0.3889,
+          0.4722,
+          0.4861,
+          0.5694,
+          0.3889,
+          0.4583,
+          0.4444,
+          0.5,
+          0.5694,
+          0.5278,
+          0.625
+        ],
+        "val_f1": [
+          0.3696,
+          0.3514,
+          0.4078,
+          0.4107,
+          0.5158,
+          0.3514,
+          0.3929,
+          0.4346,
+          0.4643,
+          0.5548,
+          0.5087,
+          0.6144
+        ]
+      }
+    },
+    "swin": {
+      "model_key": "swin",
+      "display_name": "Swin Transformer (Swin-T)",
+      "short_name": "Swin-T",
+      "family": "Swin Transformer",
+      "timm_name": "swin_tiny_patch4_window7_224",
+      "params_millions": 27.52,
+      "train_time_sec": 407.5,
+      "best_epoch": 11,
+      "test_loss": 0.3196,
+      "accuracy": 0.946,
+      "precision_macro": 0.95,
+      "recall_macro": 0.9478,
+      "f1_macro": 0.9485,
+      "roc_auc_macro": 0.9966,
+      "inference_ms_per_img": 52.27,
+      "test_samples": 315,
+      "confusion_matrix": [
+        [
+          115,
+          4,
+          0,
+          1
+        ],
+        [
+          3,
+          47,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          54,
+          0
+        ],
+        [
+          7,
+          1,
+          0,
+          82
+        ]
+      ],
+      "per_class": {
+        "adenocarcinoma": {
+          "precision": 0.92,
+          "recall": 0.9583,
+          "f1": 0.9388,
+          "support": 120
+        },
+        "large_cell_carcinoma": {
+          "precision": 0.9038,
+          "recall": 0.9216,
+          "f1": 0.9126,
+          "support": 51
+        },
+        "normal": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 54
+        },
+        "squamous_cell_carcinoma": {
+          "precision": 0.9762,
+          "recall": 0.9111,
+          "f1": 0.9425,
+          "support": 90
+        }
+      },
+      "history": {
+        "train_loss": [
+          1.078,
+          0.8269,
+          0.6559,
+          0.5374,
+          0.4088,
+          0.366,
+          0.3894,
+          0.2965,
+          0.2723,
+          0.2481,
+          0.2394,
+          0.2278
+        ],
+        "train_acc": [
+          0.5139,
+          0.6656,
+          0.7912,
+          0.8303,
+          0.9184,
+          0.9331,
+          0.894,
+          0.9641,
+          0.9755,
+          0.9853,
+          0.9935,
+          0.9951
+        ],
+        "val_loss": [
+          1.0722,
+          0.9143,
+          0.8462,
+          1.0114,
+          0.8595,
+          1.0336,
+          0.533,
+          0.7734,
+          0.5613,
+          0.4712,
+          0.4667,
+          0.4202
+        ],
+        "val_acc": [
+          0.5,
+          0.7083,
+          0.7361,
+          0.6806,
+          0.7917,
+          0.6806,
+          0.8889,
+          0.8472,
+          0.8889,
+          0.9028,
+          0.9167,
+          0.9028
+        ],
+        "val_f1": [
+          0.4282,
+          0.7233,
+          0.7524,
+          0.7013,
+          0.7997,
+          0.687,
+          0.8936,
+          0.8555,
+          0.8888,
+          0.9054,
+          0.9183,
+          0.9054
+        ]
+      }
+    }
+  }
+}

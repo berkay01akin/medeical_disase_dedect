@@ -1,15 +1,15 @@
 {
   "project_title": "Medikal Görüntülerden Hastalık Tespiti",
-  "project_subtitle": "Beyin MR Görüntülerinde Klasik Görüntü İşleme, CNN, ViT, Swin Transformer ve SAM Tabanlı Tümör Tespiti ve Segmentasyonu",
+  "project_subtitle": "MR, Röntgen ve Tomografi (BT) Görüntülerinde Otomatik Modalite Yönlendirmeli Klasik Görüntü İşleme, CNN, ViT, Swin Transformer ve SAM Tabanlı Hastalık Tespiti",
   "course_name": "Görüntü İşleme",
   "github_url": "https://github.com/berkay01akin/medeical_disase_dedect",
   "github_git_url": "https://github.com/berkay01akin/medeical_disase_dedect.git",
   "team_members": [
-    {"name": "Berkay Akın", "student_id": "Öğrenci No", "role": "Veri Seti & Klasik Görüntü İşleme"},
-    {"name": "2. Grup Üyesi (Ad Soyad)", "student_id": "Öğrenci No", "role": "Derin Öğrenme Modelleri (CNN, ViT, Swin) & Değerlendirme"},
-    {"name": "3. Grup Üyesi (Ad Soyad)", "student_id": "Öğrenci No", "role": "Grad-CAM, SAM Segmentasyon & Streamlit Demo Arayüzü"}
+    {"name": "Berkay Akın", "student_id": "Öğrenci No", "role": "Veri Setleri, Klasik Görüntü İşleme & Modalite Router"},
+    {"name": "2. Grup Üyesi (Ad Soyad)", "student_id": "Öğrenci No", "role": "Çoklu Modalite Derin Öğrenme Modelleri (CNN, ViT, Swin) & Değerlendirme"},
+    {"name": "3. Grup Üyesi (Ad Soyad)", "student_id": "Öğrenci No", "role": "Grad-CAM, MobileSAM Segmentasyon & 3 Modaliteli Streamlit Arayüzü"}
   ],
-  "dataset_name": "Brain Tumor MRI Dataset (Kaggle - Figshare + SARTAJ + Br35H)",
+  "dataset_name": "Brain Tumor MRI (7.200 MR) + Chest X-Ray COVID/Pnömoni/TB (6.461 Röntgen) + Lung Cancer CT (1.000 BT)",
   "classes": ["glioma", "meningioma", "notumor", "pituitary"],
   "class_labels_tr": {
     "glioma": "Glioma Tümörü",
@@ -22,6 +22,84 @@
     "meningioma": "Beyni ve omuriliği saran meninks zarlarından gelişen, çoğunlukla iyi huylu ve keskin sınırlı tümördür.",
     "notumor": "Analiz edilen MR kesitinde belirgin bir tümör bulgusuna rastlanmamıştır.",
     "pituitary": "Beyin tabanındaki hipofiz bezinde oluşan, hormon dengesini ve görme sinirlerini etkileyebilen tümördür."
+  },
+  "router_classes": ["brain_mri", "chest_ct", "chest_xray"],
+  "modalities": {
+    "brain_mri": {
+      "display_name": "Beyin MR — Tümör Tespiti",
+      "short_name": "Beyin MR",
+      "icon": "🧠",
+      "dataset_source": "Kaggle Brain Tumor MRI (Figshare + SARTAJ + Br35H — 7.200 MR) + BRISC 2025 Harici Test",
+      "checkpoint_subdir": "",
+      "metrics_file": "metrics.json",
+      "plots_subdir": "",
+      "sample_subdir": "",
+      "use_roi_default": true,
+      "healthy_class": "notumor",
+      "classes": ["glioma", "meningioma", "notumor", "pituitary"],
+      "class_labels_tr": {
+        "glioma": "Glioma Tümörü",
+        "meningioma": "Menenjiyom Tümörü",
+        "notumor": "Tümör Yok (Sağlıklı)",
+        "pituitary": "Hipofiz (Pituitary) Tümörü"
+      },
+      "class_descriptions_tr": {
+        "glioma": "Beyin ve omurilikteki glial hücrelerden köken alan, genellikle infiltratif yapıda birincil beyin tümörüdür.",
+        "meningioma": "Beyni ve omuriliği saran meninks zarlarından gelişen, çoğunlukla iyi huylu ve keskin sınırlı tümördür.",
+        "notumor": "Analiz edilen Beyin MR kesitinde belirgin bir tümör bulgusuna rastlanmamıştır.",
+        "pituitary": "Beyin tabanındaki hipofiz bezinde oluşan, hormon dengesini ve görme sinirlerini etkileyebilen tümördür."
+      }
+    },
+    "chest_xray": {
+      "display_name": "Göğüs Röntgeni (X-Ray) — COVID-19 & Akciğer",
+      "short_name": "Göğüs Röntgeni",
+      "icon": "🫁",
+      "dataset_source": "Hugging Face Chest X-Ray (fahmiaziz/pneumonia-covid-tuberculosis — 4 Sınıf)",
+      "checkpoint_subdir": "chest_xray",
+      "metrics_file": "metrics_chest_xray.json",
+      "plots_subdir": "chest_xray",
+      "sample_subdir": "chest_xray",
+      "use_roi_default": false,
+      "healthy_class": "normal",
+      "classes": ["covid19", "normal", "pneumonia", "tuberculosis"],
+      "class_labels_tr": {
+        "covid19": "COVID-19",
+        "normal": "Normal (Sağlıklı Akciğer)",
+        "pneumonia": "Pnömoni (Zatürre)",
+        "tuberculosis": "Tüberküloz (Verem)"
+      },
+      "class_descriptions_tr": {
+        "covid19": "SARS-CoV-2 enfeksiyonuna bağlı akciğerlerde çift taraflı buzlu cam opasiteleri ve infiltrasyon bulguları.",
+        "normal": "Analiz edilen göğüs röntgeninde belirgin enfeksiyon veya patolojik opasite gözlenmemiştir.",
+        "pneumonia": "Bakteriyel veya viral kaynaklı akciğer parankiminde yoğunlaşma (konsolidasyon) ile karakterize zatürre bulgusu.",
+        "tuberculosis": "Mycobacterium tuberculosis enfeksiyonuna bağlı özellikle üst loblarda kaviter veya nodüler akciğer tutulumu."
+      }
+    },
+    "chest_ct": {
+      "display_name": "Akciğer Tomografisi (BT) — Kanser Tespiti",
+      "short_name": "Akciğer BT",
+      "icon": "🩻",
+      "dataset_source": "Hugging Face Lung Cancer CT (Kabil007/LungCancer4Types — 4 Sınıf)",
+      "checkpoint_subdir": "chest_ct",
+      "metrics_file": "metrics_chest_ct.json",
+      "plots_subdir": "chest_ct",
+      "sample_subdir": "chest_ct",
+      "use_roi_default": true,
+      "healthy_class": "normal",
+      "classes": ["adenocarcinoma", "large_cell_carcinoma", "normal", "squamous_cell_carcinoma"],
+      "class_labels_tr": {
+        "adenocarcinoma": "Adenokarsinom (Akciğer Kanseri)",
+        "large_cell_carcinoma": "Büyük Hücreli Karsinom",
+        "normal": "Normal (Sağlıklı Akciğer BT)",
+        "squamous_cell_carcinoma": "Skuamöz Hücreli Karsinom"
+      },
+      "class_descriptions_tr": {
+        "adenocarcinoma": "Genellikle akciğerin dış (periferik) bölgelerinde yerleşen, en sık görülen küçük hücreli dışı akciğer kanseri alt tipidir.",
+        "large_cell_carcinoma": "Akciğerin herhangi bir bölgesinde hızla büyüyebilen, büyük ve farklılaşmamış hücreli karsinom alt tipidir.",
+        "normal": "Analiz edilen göğüs tomografisi (BT) kesitinde şüpheli malign kitle/nodül bulgusuna rastlanmamıştır.",
+        "squamous_cell_carcinoma": "Genellikle ana bronşlara yakın merkezi bölgelerde yerleşen yassı hücreli akciğer kanseri alt tipidir."
+      }
+    }
   },
   "models": {
     "cnn": {

@@ -256,14 +256,24 @@ class TumorSegmenter:
         cam_2d: np.ndarray,
         cam_threshold: float = 0.55,
         custom_bbox: Optional[Tuple[int, int, int, int]] = None,
+        apply_interior_mask: bool = True,
     ) -> Dict[str, Any]:
         """
         Görüntü üzerinde tümör/lezyon segmentasyonu gerçekleştirir.
+        - apply_interior_mask=True: MR ve BT gibi siyah dış çerçeveli görüntülerde
+          kafatası/gövde dışını ve köşe artefaktlarını temizler.
+        - apply_interior_mask=False: Göğüs Röntgeni gibi tüm çerçeveyi dolduran görüntülerde
+          akciğer alanlarının korunmasını sağlar.
         """
         h, w = rgb_image.shape[:2]
-        brain_interior = compute_brain_interior_mask(rgb_image, erode_px=10)
-        cam_rs = mask_cam_to_brain(cam_2d, rgb_image, erode_px=12)
-        auto_bbox, peak_point = extract_prompt_from_cam(cam_rs, rgb_image=rgb_image, threshold=cam_threshold)
+        if apply_interior_mask:
+            brain_interior = compute_brain_interior_mask(rgb_image, erode_px=10)
+            cam_rs = mask_cam_to_brain(cam_2d, rgb_image, erode_px=12)
+            auto_bbox, peak_point = extract_prompt_from_cam(cam_rs, rgb_image=rgb_image, threshold=cam_threshold)
+        else:
+            brain_interior = np.ones((h, w), dtype=np.uint8)
+            cam_rs = cv2.resize(cam_2d, (w, h), interpolation=cv2.INTER_CUBIC)
+            auto_bbox, peak_point = extract_prompt_from_cam(cam_rs, rgb_image=None, threshold=cam_threshold)
         bbox = custom_bbox if custom_bbox is not None else auto_bbox
 
         mask_bin: Optional[np.ndarray] = None

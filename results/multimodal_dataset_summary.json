@@ -1,0 +1,59 @@
+{
+  "chest_ct": {
+    "train": {
+      "adenocarcinoma": 195,
+      "large_cell_carcinoma": 115,
+      "normal": 148,
+      "squamous_cell_carcinoma": 155
+    },
+    "val": {
+      "adenocarcinoma": 23,
+      "large_cell_carcinoma": 21,
+      "normal": 13,
+      "squamous_cell_carcinoma": 15
+    },
+    "test": {
+      "adenocarcinoma": 120,
+      "large_cell_carcinoma": 51,
+      "normal": 54,
+      "squamous_cell_carcinoma": 90
+    }
+  },
+  "chest_xray": {
+    "train": {
+      "covid19": 585,
+      "normal": 585,
+      "pneumonia": 585,
+      "tuberculosis": 309
+    },
+    "val": {
+      "covid19": 135,
+      "normal": 135,
+      "pneumonia": 135,
+      "tuberculosis": 71
+    },
+    "test": {
+      "covid19": 180,
+      "normal": 180,
+      "pneumonia": 180,
+      "tuberculosis": 94
+    }
+  },
+  "router": {
+    "train": {
+      "brain_mri": 630,
+      "chest_ct": 630,
+      "chest_xray": 630
+    },
+    "val": {
+      "brain_mri": 135,
+      "chest_ct": 135,
+      "chest_xray": 135
+    },
+    "test": {
+      "brain_mri": 135,
+      "chest_ct": 135,
+      "chest_xray": 135
+    }
+  }
+}

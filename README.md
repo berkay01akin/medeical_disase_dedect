@@ -40,8 +40,9 @@ Bu proje; **Beyin MR (4 Sınıf Tümör — 7.200 MR)**, **Göğüs Röntgeni (C
 
 ### Görsel Çıktılar
 ![3 Modaliteli Genel Karşılaştırma](results/plots/multimodal_overview.png)
+![Otomatik Modalite Router Matrisi](results/plots/router_confusion_matrix.png)
+![Göğüs Röntgeni ve Akciğer BT Ön İşleme](results/plots/xray_ct_preprocessing_showcase.png)
 ![3 Modaliteli Grad-CAM ve MobileSAM](results/plots/multimodal_gradcam_sam.png)
-![Klasik Görüntü İşleme Hattı](results/plots/preprocessing_showcase.png)
 
 ---
 
